@@ -10,6 +10,7 @@ export default function CheckoutPage() {
 
   const [form, setForm] = useState({
     name: '',
+    email: '',
     phone: '',
     address: '',
     city: '',
@@ -17,42 +18,66 @@ export default function CheckoutPage() {
   })
 
   const [paymentMethod, setPaymentMethod] = useState<'instapay' | 'cod' | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const isFormValid = form.name && form.phone && form.address && form.city && paymentMethod
+  const isFormValid = form.name && form.email && form.phone && form.address && form.city && paymentMethod
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isFormValid) return
+    setLoading(true)
 
-    const orderLines = items
-      .map(
-        (item) =>
-          `• ${item.product.name} — Size: ${item.size} — ${item.product.price.toLocaleString()} EGP`
-      )
-      .join('\n')
+    try {
+      // Save order to Supabase via API
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          paymentMethod,
+          items,
+          total: total(),
+        }),
+      })
 
-    const paymentText = paymentMethod === 'instapay'
-      ? 'Payment: InstaPay — please share your InstaPay number so I can complete the transfer.'
-      : 'Payment: Cash on Delivery'
+      const data = await res.json()
+      if (!data.success) throw new Error('Order failed')
 
-    const message =
-      `Hello FYNDE! I'd like to place an order:\n\n` +
-      `${orderLines}\n\n` +
-      `Total: ${total().toLocaleString()} EGP\n\n` +
-      `Name: ${form.name}\n` +
-      `Phone: ${form.phone}\n` +
-      `Address: ${form.address}, ${form.city}\n` +
-      `${form.notes ? `Notes: ${form.notes}\n` : ''}` +
-      `\n${paymentText}\n\n` +
-      `Please confirm availability. Thank you!`
+      if (paymentMethod === 'instapay') {
+        // Redirect to WhatsApp for InstaPay
+        const orderLines = items
+          .map(
+            (item) =>
+              `• ${item.product.name} — Size: ${item.size} — ${item.product.price.toLocaleString()} EGP`
+          )
+          .join('\n')
 
-    const encoded = encodeURIComponent(message)
-    window.open(`https://wa.me/201050545699?text=${encoded}`, '_blank')
-    clearCart()
-    router.push('/')
+        const message =
+          `Hello FYNDE! I'd like to place an order:\n\n` +
+          `${orderLines}\n\n` +
+          `Total: ${total().toLocaleString()} EGP\n\n` +
+          `Name: ${form.name}\n` +
+          `Phone: ${form.phone}\n` +
+          `Address: ${form.address}, ${form.city}\n` +
+          `${form.notes ? `Notes: ${form.notes}\n` : ''}` +
+          `\nPayment: InstaPay — please share your InstaPay number so I can complete the transfer.\n\n` +
+          `Please confirm availability. Thank you!`
+
+        const encoded = encodeURIComponent(message)
+        window.open(`https://wa.me/201050545699?text=${encoded}`, '_blank')
+      }
+
+      clearCart()
+      router.push('/order-confirmed')
+    } catch (error) {
+      console.error(error)
+      alert('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (items.length === 0) {
@@ -128,6 +153,20 @@ export default function CheckoutPage() {
 
             <div>
               <label className="font-mono text-[9px] uppercase tracking-widest text-taupe block mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="ahmed@example.com"
+                className="w-full bg-transparent border border-taupe-light px-4 py-3 font-mono text-sm text-ink placeholder:text-taupe focus:border-ink outline-none transition-colors min-h-[44px]"
+              />
+            </div>
+
+            <div>
+              <label className="font-mono text-[9px] uppercase tracking-widest text-taupe block mb-2">
                 Phone Number
               </label>
               <input
@@ -185,79 +224,88 @@ export default function CheckoutPage() {
         </div>
 
         {/* Payment Method */}
-<div className="mb-10">
-  <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mb-6">
-    Payment Method
-  </p>
-  <div className="grid grid-cols-2 gap-4 mb-4">
-    <button
-      onClick={() => setPaymentMethod('instapay')}
-      className={`flex flex-col items-center justify-center gap-2 p-6 border transition-colors min-h-[44px] ${
-        paymentMethod === 'instapay'
-          ? 'border-ink bg-ink text-ivory'
-          : 'border-taupe-light text-ink hover:border-ink'
-      }`}
-    >
-      <span className="font-display text-xl tracking-wider">InstaPay</span>
-      <span className="font-mono text-[9px] uppercase tracking-widest opacity-60">
-        Transfer online
-      </span>
-    </button>
+        <div className="mb-10">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mb-6">
+            Payment Method
+          </p>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <button
+              onClick={() => setPaymentMethod('instapay')}
+              className={`flex flex-col items-center justify-center gap-2 p-6 border transition-colors min-h-[44px] ${
+                paymentMethod === 'instapay'
+                  ? 'border-ink bg-ink text-ivory'
+                  : 'border-taupe-light text-ink hover:border-ink'
+              }`}
+            >
+              <span className="font-display text-xl tracking-wider">InstaPay</span>
+              <span className="font-mono text-[9px] uppercase tracking-widest opacity-60">
+                Transfer online
+              </span>
+            </button>
 
-    <button
-      onClick={() => setPaymentMethod('cod')}
-      className={`flex flex-col items-center justify-center gap-2 p-6 border transition-colors min-h-[44px] ${
-        paymentMethod === 'cod'
-          ? 'border-ink bg-ink text-ivory'
-          : 'border-taupe-light text-ink hover:border-ink'
-      }`}
-    >
-      <span className="font-display text-xl tracking-wider">Cash</span>
-      <span className="font-mono text-[9px] uppercase tracking-widest opacity-60">
-        Pay on delivery
-      </span>
-    </button>
-  </div>
+            <button
+              onClick={() => setPaymentMethod('cod')}
+              className={`flex flex-col items-center justify-center gap-2 p-6 border transition-colors min-h-[44px] ${
+                paymentMethod === 'cod'
+                  ? 'border-ink bg-ink text-ivory'
+                  : 'border-taupe-light text-ink hover:border-ink'
+              }`}
+            >
+              <span className="font-display text-xl tracking-wider">Cash</span>
+              <span className="font-mono text-[9px] uppercase tracking-widest opacity-60">
+                Pay on delivery
+              </span>
+            </button>
+          </div>
 
-  {/* Dynamic payment info */}
-  {paymentMethod === 'instapay' && (
-    <div className="border border-taupe-light p-4 bg-ivory">
-      <p className="font-mono text-[9px] uppercase tracking-widest text-taupe mb-2">
-        How InstaPay works
-      </p>
-      <p className="font-serif text-sm italic text-ink leading-relaxed">
-        After confirming your order on WhatsApp, we will send you our InstaPay number. 
-        Transfer the total amount and send us a screenshot to confirm your payment.
-      </p>
-    </div>
-  )}
+          {paymentMethod === 'instapay' && (
+            <div className="border border-taupe-light p-4 bg-ivory">
+              <p className="font-mono text-[9px] uppercase tracking-widest text-taupe mb-2">
+                How InstaPay works
+              </p>
+              <p className="font-serif text-sm italic text-ink leading-relaxed">
+                After confirming your order on WhatsApp, we will send you our InstaPay number.
+                Transfer the total amount and send us a screenshot to confirm your payment.
+              </p>
+            </div>
+          )}
 
-  {paymentMethod === 'cod' && (
-    <div className="border border-taupe-light p-4 bg-ivory">
-      <p className="font-mono text-[9px] uppercase tracking-widest text-taupe mb-2">
-        How Cash on Delivery works
-      </p>
-      <p className="font-serif text-sm italic text-ink leading-relaxed"> 
-        You pay the courier in cash upon receiving your piece.
-      </p>
-    </div>
-  )}
-</div>
+          {paymentMethod === 'cod' && (
+            <div className="border border-taupe-light p-4 bg-ivory">
+              <p className="font-mono text-[9px] uppercase tracking-widest text-taupe mb-2">
+                How Cash on Delivery works
+              </p>
+              <p className="font-serif text-sm italic text-ink leading-relaxed">
+                After placing your order, you will receive a confirmation email with your order details.
+                We will arrange delivery to your address and you pay the courier in cash.
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Submit */}
         <button
           onClick={handleSubmit}
-          disabled={!isFormValid}
+          disabled={!isFormValid || loading}
           className={`w-full font-mono text-xs uppercase tracking-widest py-4 min-h-[44px] transition-colors ${
-            isFormValid
-              ? 'bg-[#25D366] text-ivory hover:bg-[#1ebe5d]'
+            isFormValid && !loading
+              ? paymentMethod === 'instapay'
+                ? 'bg-[#25D366] text-ivory hover:bg-[#1ebe5d]'
+                : 'bg-ink text-ivory hover:bg-sienna'
               : 'bg-taupe-light text-taupe cursor-not-allowed'
           }`}
         >
-          Complete Order via WhatsApp
+          {loading
+            ? 'Processing...'
+            : paymentMethod === 'instapay'
+            ? 'Continue to WhatsApp'
+            : 'Place Order'}
         </button>
 
         <p className="font-mono text-[9px] uppercase tracking-widest text-taupe text-center mt-4">
-          You will be redirected to WhatsApp to confirm your order
+          {paymentMethod === 'instapay'
+            ? 'You will be redirected to WhatsApp to confirm your order'
+            : 'A confirmation email will be sent to you shortly'}
         </p>
 
       </div>
