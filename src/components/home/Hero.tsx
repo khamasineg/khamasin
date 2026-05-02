@@ -38,15 +38,12 @@ export default function Hero() {
         ref={imageRef}
         className="relative w-full flex-1 min-h-[340px] md:min-h-[500px] rounded-sm overflow-hidden bg-taupe mb-8"
       >
-        {/* Placeholder */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-ivory opacity-60">
-            Editorial image
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-ivory opacity-40">
-            1200 × 800
-          </span>
-        </div>
+       {/* Hero Image */}
+<img
+  src="/images/hero.jpg"
+  alt="Marlboro Vintage Jacket — 1980s"
+  className="absolute inset-0 w-full h-full object-cover"
+/>
 
         {/* Era stamp */}
         <div className="absolute bottom-4 left-4 flex gap-2">
