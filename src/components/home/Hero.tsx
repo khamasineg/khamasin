@@ -29,7 +29,7 @@ export default function Hero() {
           finds.
         </h1>
         <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mt-4">
-          Beautifully worn. Authenticated. One of one.
+          Beautifully worn. Carefully sourced. One of one.
         </p>
       </div>
 

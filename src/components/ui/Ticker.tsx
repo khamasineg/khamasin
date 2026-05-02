@@ -4,7 +4,6 @@ export default function Ticker() {
   const items = [
     'Rare finds, beautifully worn',
     'One of one pieces',
-    'Authenticated vintage',
     'Free shipping on orders over 500 EGP',
     'New arrivals every week',
   ]
