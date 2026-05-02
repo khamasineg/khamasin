@@ -14,7 +14,7 @@ export default function BrandStatement() {
         {/* Statement */}
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-[clamp(28px,6vw,72px)] leading-tight italic text-ivory mb-8">
-            "Every piece we carry has lived a life. Our job is to find it, preserve it and put it in the hands of someone who will honour it."
+          &ldquo;Every piece we carry has lived a life. Our job is to find it, preserve it and put it in the hands of someone who will honour it.&rdquo;
           </h2>
           <p className="font-mono text-[10px] uppercase tracking-widest text-ivory/40">
             — The FYNDE Archive
