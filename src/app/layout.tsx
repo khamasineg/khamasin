@@ -6,6 +6,7 @@ import PageTransition from '@/components/layout/PageTransition'
 import Grain from '@/components/ui/Grain'
 import Cursor from '@/components/ui/Cursor'
 import Ticker from '@/components/ui/Ticker'
+import CartDrawer from '@/components/cart/CartDrawer'
 
 export const metadata: Metadata = {
   title: 'FYNDE — Rare finds, beautifully worn.',
@@ -30,6 +31,7 @@ export default function RootLayout({
         <Cursor />
         <Ticker />
         <Nav />
+        <CartDrawer />
         <PageTransition>
           {children}
         </PageTransition>
