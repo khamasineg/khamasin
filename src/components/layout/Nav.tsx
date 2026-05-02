@@ -72,7 +72,20 @@ export default function Nav() {
           </div>
         </nav>
       )}
-
+{/* Mobile Top Header */}
+{isMobile && (
+  <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-parchment border-b border-taupe-light">
+    <Link href="/" className="font-display text-xl tracking-widest text-ink">
+      FYNDE
+    </Link>
+    <button
+      onClick={openCart}
+      className="font-mono text-[10px] uppercase tracking-widest text-ink min-w-[44px] min-h-[44px] flex items-center justify-end"
+    >
+      Cart {itemCount > 0 && `(${itemCount})`}
+    </button>
+  </div>
+)}
       {/* Mobile Bottom Navigation */}
       {isMobile && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-taupe bg-parchment px-4 py-3">
