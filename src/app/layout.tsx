@@ -32,9 +32,11 @@ export default function RootLayout({
         <Ticker />
         <Nav />
         <CartDrawer />
-        <PageTransition>
-          {children}
-        </PageTransition>
+        <div className="pt-[88px] md:pt-0">
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </div>
         <Footer />
       </body>
     </html>

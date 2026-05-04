@@ -11,8 +11,9 @@ export default function Ticker() {
   const repeated = [...items, ...items, ...items]
 
   return (
-<div className="w-full overflow-hidden bg-sienna py-2 fixed top-[57px] left-0 right-0 z-40 md:static md:top-auto">      <div
-        className="flex whitespace-nowrap"
+<div className="fixed left-0 right-0 top-14 z-40 h-8 w-full overflow-hidden bg-sienna md:static md:top-auto md:h-auto md:py-2">
+      <div
+        className="flex h-full items-center whitespace-nowrap"
         style={{
           animation: 'ticker 30s linear infinite',
         }}
