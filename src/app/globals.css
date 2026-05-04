@@ -79,3 +79,20 @@ body {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
 }
+@keyframes letterIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ruleGrow {
+  to {
+    width: min(320px, 55vw);
+  }
+}
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}

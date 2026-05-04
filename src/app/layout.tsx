@@ -7,6 +7,7 @@ import Grain from '@/components/ui/Grain'
 import Cursor from '@/components/ui/Cursor'
 import Ticker from '@/components/ui/Ticker'
 import CartDrawer from '@/components/cart/CartDrawer'
+import Loader from '@/components/ui/Loader'
 
 export const metadata: Metadata = {
   title: 'FYNDE — Rare finds, beautifully worn.',
@@ -25,8 +26,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" ><head>
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+      as="style"
+    />
+  </head>
       <body className="bg-parchment text-ink">
+        <Loader />
         <Grain />
         <Cursor />
         <Ticker />
