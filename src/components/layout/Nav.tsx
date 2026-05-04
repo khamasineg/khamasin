@@ -77,12 +77,17 @@ export default function Nav() {
               </Link>
             ))}
             <button
-              onClick={openCart}
-              className="font-mono text-[0.58rem] uppercase tracking-[0.22em] border border-ink px-4 py-2 hover:bg-ink hover:text-ivory transition-colors duration-300"
-              style={{ color: '#1C1917' }}
-            >
-              Bag {itemCount > 0 && `(${itemCount})`}
-            </button>
+  onClick={openCart}
+  className="font-mono text-[0.58rem] uppercase tracking-[0.22em] border border-ink px-4 py-2 hover:bg-sienna hover:border-sienna hover:text-ivory transition-colors duration-300 flex items-center gap-2"
+  style={{ color: '#1C1917' }}
+>
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <path d="M16 10a4 4 0 01-8 0"/>
+  </svg>
+  {itemCount > 0 ? `Bag (${itemCount})` : 'Bag'}
+</button>
           </div>
         </nav>
       )}

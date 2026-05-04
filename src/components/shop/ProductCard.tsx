@@ -13,12 +13,18 @@ export default function ProductCard({ product }: { product: Product }) {
     e.preventDefault()
     e.stopPropagation()
     if (product.sold) return
-    const defaultSize = product.sizes?.[0]
-    if (!defaultSize) return
-    addItem(product, defaultSize)
-    setAdded(true)
-    openCart()
-    setTimeout(() => setAdded(false), 2000)
+  
+    // If only one size, add directly
+    if (product.sizes?.length === 1) {
+      addItem(product, product.sizes[0])
+      setAdded(true)
+      openCart()
+      setTimeout(() => setAdded(false), 2000)
+      return
+    }
+  
+    // If multiple sizes, go to product page to select
+    window.location.href = `/shop/${product.slug}`
   }
 
   return (
@@ -49,37 +55,42 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Sold overlay */}
-        {product.sold && (
-          <div className="absolute inset-0 bg-parchment/70 flex items-center justify-center z-10">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink">
-              Sold
-            </span>
-          </div>
-        )}
-
         {/* Hover overlay */}
-        {!product.sold && (
-          <div
-            className="absolute inset-0 z-10 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            style={{
-              background: 'linear-gradient(to top, rgba(28,25,23,0.75) 0%, transparent 55%)',
-            }}
-          >
-            <button
-              onClick={handleAddToCart}
-              className="w-full font-mono text-[0.55rem] uppercase tracking-[0.2em] border py-3 transition-colors duration-200"
-              style={{
-                color: added ? '#1C1917' : '#FAF6F0',
-                background: added ? '#FAF6F0' : 'transparent',
-                borderColor: '#FAF6F0',
-              }}
-            >
-              {added ? 'Added to Bag' : product.sizes?.length === 1
-                ? `Add to Bag — ${product.sizes[0]}`
-                : 'Select Size'}
-            </button>
-          </div>
-        )}
+{!product.sold && (
+  <div
+    className="absolute inset-0 z-10 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+    style={{
+      background: 'linear-gradient(to top, rgba(28,25,23,0.75) 0%, transparent 55%)',
+    }}
+  >
+    <button
+      onClick={handleAddToCart}
+      className="relative w-full overflow-hidden font-mono text-[0.55rem] uppercase tracking-[0.2em] border border-ivory py-3 transition-colors duration-200 group/btn"
+      style={{
+        color: added ? '#1C1917' : '#FAF6F0',
+        background: added ? '#FAF6F0' : 'transparent',
+      }}
+    >
+      {/* Sienna slide-in background */}
+      {!added && (
+        <span
+          className="absolute inset-0 bg-ivory -translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300"
+          style={{ transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)' }}
+        />
+      )}
+      <span
+        className="relative z-10 transition-colors duration-200"
+        style={{ color: added ? '#1C1917' : undefined }}
+      >
+        {added
+          ? '✦ Added to Bag'
+          : product.sizes?.length === 1
+          ? `Add to Bag — ${product.sizes[0]}`
+          : 'View & Select Size →'}
+      </span>
+    </button>
+  </div>
+)}
       </div>
 
       {/* Info */}
