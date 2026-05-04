@@ -66,7 +66,7 @@ export async function sendOrderConfirmationEmail({
           <p style="font-family: monospace; font-size: 12px; color: #1C1917; margin: 0;">${paymentMethod === 'cod' ? 'Cash on Delivery' : 'InstaPay'}</p>
         </div>
 
-        <p style="font-family: serif; font-size: 13px; color: #BEB0A0; font-style: italic; margin: 0;">We will be in touch shortly to confirm your delivery details.</p>
+        <p style="font-family: serif; font-size: 13px; color: #BEB0A0; font-style: italic; margin: 0;">Your order is confirmed and being prepared for delivery. You will receive your piece at the address provided.</p>
 
       </div>
     </div>
@@ -74,7 +74,7 @@ export async function sendOrderConfirmationEmail({
 
   return resend.emails.send({
     from: 'FYNDE <onboarding@resend.dev>',
-    to: customerEmail,
+    to: 'fyndethevintage@gmail.com',
     subject: 'Your FYNDE Order is Confirmed',
     html,
   })

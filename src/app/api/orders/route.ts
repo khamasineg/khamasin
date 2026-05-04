@@ -50,20 +50,22 @@ export async function POST(req: NextRequest) {
         .update({ sold: true })
         .in('id', productIds)
 
-      // Send confirmation email for COD
-      await sendOrderConfirmationEmail({
-        customerEmail: email,
-        customerName: name,
-        items: items.map((item: { product: { name: string; price: number }; size: string }) => ({
-          name: item.product.name,
-          size: item.size,
-          price: item.product.price,
-        })),
-        total,
-        paymentMethod,
-        address,
-        city,
-      })
+     // Send confirmation email for COD
+const emailResult = await sendOrderConfirmationEmail({
+    customerEmail: email,
+    customerName: name,
+    items: items.map((item: { product: { name: string; price: number }; size: string }) => ({
+      name: item.product.name,
+      size: item.size,
+      price: item.product.price,
+    })),
+    total,
+    paymentMethod,
+    address,
+    city,
+  })
+  
+  console.log('Email result:', JSON.stringify(emailResult, null, 2))
     }
 
     return NextResponse.json({ success: true, order })
