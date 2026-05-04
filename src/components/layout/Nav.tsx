@@ -74,7 +74,8 @@ export default function Nav() {
       )}
 {/* Mobile Top Header */}
 {isMobile && (
-    <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-parchment border-b border-taupe-light" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>    <Link href="/" className="font-display text-xl tracking-widest text-ink">
+    <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-taupe-light bg-parchment px-6">
+    <Link href="/" className="font-display text-xl tracking-widest text-ink">
       FYNDE
     </Link>
     <button
