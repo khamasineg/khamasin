@@ -74,3 +74,8 @@ body::after {
   0% { transform: translateX(0); }
   100% { transform: translateX(-33.333%); }
 }
+/* Safe area support for notch devices */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
