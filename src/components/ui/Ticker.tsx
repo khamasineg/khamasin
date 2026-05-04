@@ -11,7 +11,7 @@ export default function Ticker() {
   const repeated = [...items, ...items, ...items]
 
   return (
-    <div className="w-full overflow-hidden bg-sienna py-2">
+    <div className="w-full overflow-hidden bg-sienna py-2 mt-16 md:mt-0">
       <div
         className="flex whitespace-nowrap"
         style={{
