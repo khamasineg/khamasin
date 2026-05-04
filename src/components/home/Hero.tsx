@@ -55,7 +55,7 @@ export default function Hero() {
         {/* Headline */}
         <h1 className="mb-8">
           <span
-            className="font-serif italic font-light text-ink block leading-[0.92]"
+            className="font-serif italic font-light text-sienna block leading-[0.92]"
             style={{ fontSize: 'clamp(3.5rem, 8vw, 8rem)' }}
           >
             Every piece

@@ -61,8 +61,13 @@ function StatItem({
       }}
     >
       <span className="font-display text-4xl md:text-5xl text-ink block leading-none mb-2 tracking-wide">
-      {countTo ? (count >= countTo ? (countTo === 9999 ? '∞' : count) : count) : display}
-      </span>
+      {countTo
+  ? count >= countTo
+    ? countTo === 9999
+      ? <span style={{ fontFamily: 'serif', fontSize: '1.2em', lineHeight: 1 }}>∞</span>
+      : count
+    : count
+  : display}      </span>
       <span className="font-mono text-[0.52rem] uppercase tracking-[0.22em] text-taupe">
         {label}
       </span>

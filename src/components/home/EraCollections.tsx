@@ -91,9 +91,12 @@ export default function EraCollections() {
               <span className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-sienna">
                 Explore
               </span>
-              <span className="text-taupe-light group-hover:text-sienna group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-200">
-                ↗
-              </span>
+              <span
+  className="font-mono text-taupe-light group-hover:text-sienna group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-200"
+  style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}
+>
+  &#8599;
+</span>
             </div>
           </Link>
         ))}

@@ -15,14 +15,14 @@ export default function Cursor() {
     let mouseY = 0
     let ringX = 0
     let ringY = 0
-    let animationId: number
 
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX
       mouseY = e.clientY
 
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${mouseX}px, ${mouseY}px)`
+        dotRef.current.style.left = `${mouseX}px`
+        dotRef.current.style.top = `${mouseY}px`
       }
     }
 
@@ -31,32 +31,41 @@ export default function Cursor() {
       ringY += (mouseY - ringY) * 0.12
 
       if (ringRef.current) {
-        ringRef.current.style.transform = `translate(${ringX}px, ${ringY}px)`
+        ringRef.current.style.left = `${ringX}px`
+        ringRef.current.style.top = `${ringY}px`
       }
 
-      animationId = requestAnimationFrame(animateRing)
+      requestAnimationFrame(animateRing)
     }
 
     const onMouseEnterLink = () => {
+      if (dotRef.current) {
+        dotRef.current.style.width = '48px'
+        dotRef.current.style.height = '48px'
+        dotRef.current.style.opacity = '0.2'
+      }
       if (ringRef.current) {
-        ringRef.current.style.width = '48px'
-        ringRef.current.style.height = '48px'
-        ringRef.current.style.borderColor = 'var(--sienna)'
-        ringRef.current.style.opacity = '1'
+        ringRef.current.style.width = '10px'
+        ringRef.current.style.height = '10px'
+        ringRef.current.style.opacity = '0'
       }
     }
 
     const onMouseLeaveLink = () => {
+      if (dotRef.current) {
+        dotRef.current.style.width = '10px'
+        dotRef.current.style.height = '10px'
+        dotRef.current.style.opacity = '1'
+      }
       if (ringRef.current) {
-        ringRef.current.style.width = '32px'
-        ringRef.current.style.height = '32px'
-        ringRef.current.style.borderColor = 'var(--sienna)'
-        ringRef.current.style.opacity = '0.6'
+        ringRef.current.style.width = '38px'
+        ringRef.current.style.height = '38px'
+        ringRef.current.style.opacity = '0.35'
       }
     }
 
     document.addEventListener('mousemove', onMouseMove)
-    animationId = requestAnimationFrame(animateRing)
+    const animId = requestAnimationFrame(animateRing)
 
     const links = document.querySelectorAll('a, button')
     links.forEach((el) => {
@@ -66,7 +75,7 @@ export default function Cursor() {
 
     return () => {
       document.removeEventListener('mousemove', onMouseMove)
-      cancelAnimationFrame(animationId)
+      cancelAnimationFrame(animId)
       links.forEach((el) => {
         el.removeEventListener('mouseenter', onMouseEnterLink)
         el.removeEventListener('mouseleave', onMouseLeaveLink)
@@ -82,17 +91,29 @@ export default function Cursor() {
       <div
         ref={dotRef}
         aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-0 z-[9998] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sienna"
-        style={{ transition: 'transform 0.05s linear' }}
+        className="pointer-events-none fixed z-[9998] rounded-full bg-sienna"
+        style={{
+          width: '10px',
+          height: '10px',
+          transform: 'translate(-50%, -50%)',
+          transition: 'width 0.3s ease, height 0.3s ease, opacity 0.3s ease',
+          top: 0,
+          left: 0,
+        }}
       />
       {/* Ring */}
       <div
         ref={ringRef}
         aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-0 z-[9997] h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sienna"
+        className="pointer-events-none fixed z-[9997] rounded-full border border-ink"
         style={{
-          opacity: 0.6,
+          width: '38px',
+          height: '38px',
+          transform: 'translate(-50%, -50%)',
+          opacity: 0.35,
           transition: 'width 0.3s ease, height 0.3s ease, opacity 0.3s ease',
+          top: 0,
+          left: 0,
         }}
       />
     </>
