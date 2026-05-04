@@ -8,6 +8,7 @@ import Cursor from '@/components/ui/Cursor'
 import Ticker from '@/components/ui/Ticker'
 import CartDrawer from '@/components/cart/CartDrawer'
 import Loader from '@/components/ui/Loader'
+import SmoothScroll from '@/components/ui/SmoothScroll'
 
 export const metadata: Metadata = {
   title: 'FYNDE — Rare finds, beautifully worn.',
@@ -37,6 +38,7 @@ export default function RootLayout({
         <Loader />
         <Grain />
         <Cursor />
+        <SmoothScroll />
         <Ticker />
         <Nav />
         <CartDrawer />
