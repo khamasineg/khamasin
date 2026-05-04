@@ -27,7 +27,7 @@ export default async function LookbookPage() {
           className="font-serif font-light leading-[0.9] mb-4"
           style={{ fontSize: 'clamp(3.5rem, 8vw, 8rem)' }}
         >
-          Look<em className="italic text-sienna">book</em>
+          Look<em className="italic text-sienna">book.</em>
         </h1>
         <p className="font-serif text-base italic text-taupe max-w-xl leading-relaxed">
           Rare pieces, styled simply. The archive, worn.
