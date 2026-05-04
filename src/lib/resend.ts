@@ -13,69 +13,196 @@ export async function sendOrderConfirmationEmail({
 }: {
   customerEmail: string
   customerName: string
-  items: { name: string; size: string; price: number }[]
+  items: { name: string; size: string; price: number; image?: string }[]
   total: number
   paymentMethod: string
   address: string
   city: string
 }) {
+  const firstName = customerName.split(' ')[0]
+
   const itemRows = items
     .map(
-      (item) =>
-        `<tr>
-          <td style="padding: 8px 0; font-family: monospace; font-size: 12px; border-bottom: 1px solid #D9CFC4;">${item.name}</td>
-          <td style="padding: 8px 0; font-family: monospace; font-size: 12px; border-bottom: 1px solid #D9CFC4; text-align: center;">${item.size}</td>
-          <td style="padding: 8px 0; font-family: monospace; font-size: 12px; border-bottom: 1px solid #D9CFC4; text-align: right;">${item.price.toLocaleString()} EGP</td>
-        </tr>`
+      (item) => `
+        <tr>
+          <td style="padding: 16px 0; border-bottom: 1px solid #D9CFC4;">
+            <table cellpadding="0" cellspacing="0">
+              <tr>
+                ${item.image ? `
+                <td style="padding-right: 16px; vertical-align: top;">
+                  <img src="${item.image}" alt="${item.name}" width="60" height="75" style="display: block; width: 60px; height: 75px; object-fit: cover;" />
+                </td>` : ''}
+                <td style="vertical-align: top;">
+                  <p style="font-family: Georgia, serif; font-size: 14px; color: #1C1917; margin: 0 0 4px;">${item.name}</p>
+                  <p style="font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: #BEB0A0; margin: 0;">Size: ${item.size}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td style="padding: 16px 0; border-bottom: 1px solid #D9CFC4; text-align: right; vertical-align: top;">
+            <p style="font-family: 'Courier New', monospace; font-size: 12px; color: #1C1917; margin: 0;">${item.price.toLocaleString()} EGP</p>
+          </td>
+        </tr>
+      `
     )
     .join('')
 
   const html = `
-    <div style="background-color: #F0E9DF; padding: 40px 20px; font-family: serif;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #FAF6F0; padding: 40px;">
-        
-        <h1 style="font-family: sans-serif; font-size: 32px; letter-spacing: 0.3em; color: #1C1917; margin: 0 0 8px;">FYNDE</h1>
-        <p style="font-family: monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #BEB0A0; margin: 0 0 40px;">Rare finds, beautifully worn.</p>
-        
-        <h2 style="font-family: serif; font-size: 20px; color: #1C1917; margin: 0 0 8px;">Order Confirmed</h2>
-        <p style="font-family: serif; font-size: 14px; color: #BEB0A0; font-style: italic; margin: 0 0 32px;">Thank you ${customerName}, your order has been received.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your FYNDE Order</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F0E9DF;">
 
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-          <thead>
-            <tr>
-              <th style="font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #BEB0A0; text-align: left; padding-bottom: 8px;">Item</th>
-              <th style="font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #BEB0A0; text-align: center; padding-bottom: 8px;">Size</th>
-              <th style="font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #BEB0A0; text-align: right; padding-bottom: 8px;">Price</th>
-            </tr>
-          </thead>
-          <tbody>${itemRows}</tbody>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #F0E9DF; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
+
+          <!-- Header dark -->
+          <tr>
+            <td style="background-color: #1C1917; padding: 40px 48px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <p style="font-family: 'Courier New', monospace; font-size: 28px; letter-spacing: 0.35em; color: #F0E9DF; margin: 0 0 6px; font-weight: normal;">FYNDE</p>
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #BEB0A0; margin: 0;">Rare finds, beautifully worn.</p>
+                  </td>
+                  <td align="right" style="vertical-align: bottom;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #A8401A; margin: 0;">&#10022; Order Confirmed</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Sienna rule -->
+          <tr>
+            <td style="background-color: #A8401A; height: 2px; font-size: 0; line-height: 0;">&nbsp;</td>
+          </tr>
+
+          <!-- Greeting -->
+          <tr>
+            <td style="background-color: #FAF6F0; padding: 48px 48px 32px;">
+              <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #BEB0A0; margin: 0 0 16px;">For ${firstName},</p>
+              <h1 style="font-family: Georgia, serif; font-size: 36px; font-weight: normal; font-style: italic; color: #1C1917; margin: 0 0 16px; line-height: 1.1;">Your piece is<br/>on its way.</h1>
+              <p style="font-family: Georgia, serif; font-size: 14px; color: #BEB0A0; font-style: italic; margin: 0; line-height: 1.8;">
+                Every piece we carry has lived a life. We are glad this one found you.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 48px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-top: 1px solid #D9CFC4; font-size: 0; line-height: 0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Order items -->
+          <tr>
+            <td style="background-color: #FAF6F0; padding: 32px 48px;">
+              <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #A8401A; margin: 0 0 20px;">&#8212; Your Order</p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                ${itemRows}
+                <tr>
+                  <td style="padding: 20px 0 0;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0;">Total</p>
+                  </td>
+                  <td style="padding: 20px 0 0; text-align: right;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 18px; color: #1C1917; margin: 0;">${total.toLocaleString()} EGP</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 48px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-top: 1px solid #D9CFC4; font-size: 0; line-height: 0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Delivery + Payment -->
+          <tr>
+            <td style="background-color: #FAF6F0; padding: 32px 48px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="50%" style="vertical-align: top; padding-right: 16px;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0 0 8px;">Delivery To</p>
+                    <p style="font-family: 'Courier New', monospace; font-size: 12px; color: #1C1917; margin: 0; line-height: 1.6;">${address}<br/>${city}</p>
+                  </td>
+                  <td width="50%" style="vertical-align: top; padding-left: 16px; border-left: 1px solid #D9CFC4;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0 0 8px;">Payment</p>
+                    <p style="font-family: 'Courier New', monospace; font-size: 12px; color: #1C1917; margin: 0 0 8px;">${paymentMethod === 'cod' ? 'Cash on Delivery' : 'InstaPay'}</p>
+                    <p style="font-family: Georgia, serif; font-size: 11px; color: #BEB0A0; font-style: italic; margin: 0;">
+                      ${paymentMethod === 'cod'
+                        ? 'You will pay the courier upon receiving your piece.'
+                        : 'We will send you our InstaPay number via WhatsApp shortly.'}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Quote section -->
+          <tr>
+            <td style="background-color: #1C1917; padding: 40px 48px;">
+              <p style="font-family: Georgia, serif; font-size: 16px; font-style: italic; font-weight: normal; color: #F0E9DF; margin: 0 0 16px; line-height: 1.7;">
+                &ldquo;Fashion&rsquo;s most extraordinary chapter has already been written. We just help you find your page.&rdquo;
+              </p>
+              <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0;">
+                &#8212; The FYNDE Archive
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #1C1917; padding: 0 48px 32px; border-top: 1px solid rgba(240,233,223,0.08);">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(190,176,160,0.4); margin: 0;">
+                      &copy; ${new Date().getFullYear()} FYNDE. Cairo, Egypt.
+                    </p>
+                  </td>
+                  <td align="right">
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(190,176,160,0.4); margin: 0;">
+                      fyndethevintage@gmail.com
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
         </table>
+      </td>
+    </tr>
+  </table>
 
-        <div style="display: flex; justify-content: space-between; margin-bottom: 32px;">
-          <span style="font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #BEB0A0;">Total</span>
-          <span style="font-family: monospace; font-size: 14px; color: #1C1917;">${total.toLocaleString()} EGP</span>
-        </div>
-
-        <div style="border-top: 1px solid #D9CFC4; padding-top: 24px; margin-bottom: 32px;">
-          <p style="font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #BEB0A0; margin: 0 0 8px;">Delivery Address</p>
-          <p style="font-family: monospace; font-size: 12px; color: #1C1917; margin: 0;">${address}, ${city}</p>
-        </div>
-
-        <div style="border-top: 1px solid #D9CFC4; padding-top: 24px; margin-bottom: 32px;">
-          <p style="font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #BEB0A0; margin: 0 0 8px;">Payment Method</p>
-          <p style="font-family: monospace; font-size: 12px; color: #1C1917; margin: 0;">${paymentMethod === 'cod' ? 'Cash on Delivery' : 'InstaPay'}</p>
-        </div>
-
-        <p style="font-family: serif; font-size: 13px; color: #BEB0A0; font-style: italic; margin: 0;">Your order is confirmed and being prepared for delivery. You will receive your piece at the address provided.</p>
-
-      </div>
-    </div>
+</body>
+</html>
   `
 
   return resend.emails.send({
     from: 'FYNDE <onboarding@resend.dev>',
     to: 'fyndethevintage@gmail.com',
-    subject: 'Your FYNDE Order is Confirmed',
+    subject: `&#10022; Your FYNDE order is confirmed, ${firstName}.`,
     html,
   })
 }
