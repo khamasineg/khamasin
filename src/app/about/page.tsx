@@ -75,10 +75,21 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="px-6 md:px-16">
-        <div className="h-px bg-taupe-light" />
-      </div>
+      {/* Full width image */}
+<div className="relative w-full aspect-[16/9] md:aspect-[21/9] bg-taupe overflow-hidden">
+  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+    <span className="font-mono text-[10px] uppercase tracking-widest text-ivory opacity-60">
+      Editorial image
+    </span>
+    <span className="font-mono text-[10px] uppercase tracking-widest text-ivory opacity-40">
+      1600 × 700
+    </span>
+  </div>
+  {/* Vignette */}
+  <div className="absolute inset-0 bg-gradient-to-t from-ink/30 to-transparent pointer-events-none" />
+</div>
+
+{/* Values */}
 
       {/* CTA */}
       <div className="px-6 py-16 md:px-16 md:py-24 flex flex-col md:flex-row md:items-center md:justify-between gap-8">

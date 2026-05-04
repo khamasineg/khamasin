@@ -5,22 +5,22 @@ import ProductCard from '@/components/shop/ProductCard'
 
 const eraDetails: Record<string, { label: string; description: string; years: string }> = {
   '60s': {
-    label: 'The Sixties',
+    label: 'The Sixties 60s',
     description: 'Mod cuts, bold prints, the birth of youth culture. A decade that rewrote the rules of dress.',
     years: '1960 — 1969',
   },
   '70s': {
-    label: 'The Seventies',
+    label: 'The Seventies 70s',
     description: 'Flared silhouettes, earthy tones, free spirit energy. Fashion as self-expression at its peak.',
     years: '1970 — 1979',
   },
   '80s': {
-    label: 'The Eighties',
+    label: 'The Eighties 80s',
     description: 'Power shoulders, deadstock sportswear, collector-grade pieces. A decade of excess and identity.',
     years: '1980 — 1989',
   },
   '90s': {
-    label: 'The Nineties',
+    label: 'The Nineties 90s',
     description: 'Grunge, workwear, the last era of true deadstock. Raw, minimal, and endlessly referenced.',
     years: '1990 — 1999',
   },
