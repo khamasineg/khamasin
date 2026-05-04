@@ -7,7 +7,7 @@ export default function Hero() {
   const imageRef = useRef<HTMLDivElement>(null)
 
   return (
-    <section className="relative min-h-screen bg-parchment flex flex-col px-6 pt-32 pb-32 md:px-16 md:pt-32">
+    <section className="relative min-h-screen bg-parchment flex flex-col px-6 pt-40 pb-32 md:px-16 md:pt-32">
 
       {/* Top line — era label */}
       <div className="flex items-center gap-3 mb-6">
