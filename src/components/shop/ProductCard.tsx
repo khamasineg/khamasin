@@ -4,10 +4,12 @@ import Link from 'next/link'
 import { Product } from '@/types'
 import { useCart } from '@/hooks/useCart'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'     
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem, openCart } = useCart()
   const [added, setAdded] = useState(false)
+  const router = useRouter()
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -24,7 +26,7 @@ export default function ProductCard({ product }: { product: Product }) {
     }
   
     // If multiple sizes, go to product page to select
-    window.location.href = `/shop/${product.slug}`
+    router.push(`/shop/${product.slug}`)
   }
 
   return (

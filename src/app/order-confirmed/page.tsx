@@ -1,43 +1,213 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+
+type Order = {
+  id: string
+  name: string
+  customer_email: string
+  items: {
+    product: {
+      name: string
+      era: string
+      images: string[]
+    }
+    size: string
+    quantity: number
+  }[]
+  total: number
+  payment_method: string
+  status: string
+  created_at: string
+}
 
 export default function OrderConfirmedPage() {
+  const searchParams = useSearchParams()
+  const orderId = searchParams.get('id')
+  const [order, setOrder] = useState<Order | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchOrder() {
+      if (!orderId) {
+        setLoading(false)
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .single()
+
+      if (!error && data) setOrder(data)
+      setLoading(false)
+    }
+
+    fetchOrder()
+  }, [orderId])
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-parchment flex items-center justify-center">
+        <p className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-taupe">
+          Loading your order...
+        </p>
+      </main>
+    )
+  }
+
   return (
-    <main className="min-h-screen bg-parchment flex flex-col items-center justify-center px-6 text-center">
-      
-      {/* Icon */}
-      <div className="w-16 h-16 border border-taupe-light flex items-center justify-center mb-8">
-        <span className="font-mono text-xl text-sienna">✦</span>
+    <main className="min-h-screen bg-parchment flex flex-col">
+      <div className="h-px bg-taupe-light" />
+
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-24">
+
+        {/* Icon */}
+        <div className="w-16 h-16 border border-taupe-light flex items-center justify-center mb-10">
+          <span className="font-mono text-sienna text-xl">✦</span>
+        </div>
+
+        {/* Kicker */}
+        <p className="font-mono text-[0.5rem] uppercase tracking-[0.32em] text-taupe mb-4 flex items-center gap-3">
+          <span className="h-px w-6 bg-taupe-light inline-block" />
+          Order received
+          <span className="h-px w-6 bg-taupe-light inline-block" />
+        </p>
+
+        {/* Heading */}
+        <h1
+          className="font-serif font-light leading-[0.9] mb-6 text-center"
+          style={{ fontSize: 'clamp(3rem, 8vw, 7rem)' }}
+        >
+          {order ? `Thank you,` : 'Thank'}<br />
+          <em className="italic text-sienna">
+            {order ? `${order.name.split(' ')[0]}.` : 'You.'}
+          </em>
+        </h1>
+
+        {/* Message */}
+        <p
+          className="font-mono text-[0.58rem] leading-loose tracking-wide max-w-sm mb-4 text-center"
+          style={{ color: 'rgba(28,25,23,0.5)' }}
+        >
+          {order?.payment_method === 'cod'
+            ? `Your order is confirmed. A confirmation email has been sent to ${order.customer_email}.`
+            : 'Your order has been received. Check WhatsApp to complete your InstaPay payment.'}
+        </p>
+
+        {/* Order details */}
+        {order && (
+          <div className="w-full max-w-md mt-8 mb-10">
+
+            {/* Order reference */}
+            <div className="flex items-center justify-between mb-6">
+              <p className="font-mono text-[0.45rem] uppercase tracking-[0.22em] text-taupe">
+                Order Reference
+              </p>
+              <p className="font-mono text-[0.45rem] uppercase tracking-[0.15em] text-ink">
+                #{order.id.slice(0, 8).toUpperCase()}
+              </p>
+            </div>
+
+            {/* Items */}
+            <div className="border border-taupe-light mb-4">
+              {order.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex gap-4 p-4 border-b border-taupe-light last:border-0"
+                >
+                  {item.product.images?.[0] && (
+                    <div
+                      className="w-12 flex-shrink-0 overflow-hidden bg-taupe-light"
+                      style={{ height: '60px' }}
+                    >
+                      <img
+                        src={item.product.images[0]}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <p className="font-serif text-sm text-ink leading-snug">
+                      {item.product.name}
+                    </p>
+                    <p className="font-mono text-[0.4rem] uppercase tracking-[0.2em] text-taupe">
+                      {item.product.era} · Size {item.size}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Total */}
+              <div className="flex justify-between items-center p-4 bg-ivory">
+                <span className="font-mono text-[0.45rem] uppercase tracking-[0.22em] text-taupe">
+                  Total
+                </span>
+                <span className="font-mono text-sm text-ink">
+                  {order.total.toLocaleString()} EGP
+                </span>
+              </div>
+            </div>
+
+            {/* Payment method */}
+            <div className="flex items-center justify-between border-l-2 border-sienna pl-4 py-1 mb-4">
+              <p className="font-mono text-[0.45rem] uppercase tracking-[0.22em] text-taupe">
+                Payment
+              </p>
+              <p className="font-mono text-[0.45rem] uppercase tracking-[0.15em] text-ink">
+                {order.payment_method === 'cod' ? 'Cash on Delivery' : 'InstaPay'}
+              </p>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-center justify-between border-l-2 border-taupe-light pl-4 py-1">
+              <p className="font-mono text-[0.45rem] uppercase tracking-[0.22em] text-taupe">
+                Status
+              </p>
+              <p
+                className="font-mono text-[0.45rem] uppercase tracking-[0.15em]"
+                style={{ color: order.status === 'confirmed' ? '#A8401A' : '#BEB0A0' }}
+              >
+                {order.status === 'confirmed' ? '✦ Confirmed' : 'Pending Payment'}
+              </p>
+            </div>
+
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="flex items-center gap-4 mb-10 w-full max-w-md">
+          <span className="h-px flex-1 bg-taupe-light" />
+          <span className="font-display text-xl tracking-widest text-ink">FYNDE</span>
+          <span className="h-px flex-1 bg-taupe-light" />
+        </div>
+
+        {/* CTAs */}
+        <div className="flex flex-col md:flex-row gap-4 w-full max-w-md">
+          <Link
+            href="/shop"
+            className="relative overflow-hidden flex-1 flex items-center justify-center bg-ink text-ivory font-mono text-[0.55rem] uppercase tracking-[0.22em] py-4 min-h-[44px] group"
+          >
+            <span
+              className="absolute inset-0 bg-sienna -translate-x-full group-hover:translate-x-0 transition-transform duration-300"
+              style={{ transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)' }}
+            />
+            <span className="relative z-10">Continue Shopping</span>
+          </Link>
+          <Link
+            href="/"
+            className="flex-1 flex items-center justify-center border border-taupe-light text-ink font-mono text-[0.55rem] uppercase tracking-[0.22em] py-4 min-h-[44px] hover:border-ink transition-colors"
+          >
+            Back to Home
+          </Link>
+        </div>
+
       </div>
-
-      {/* Heading */}
-      <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mb-3">
-        Order received
-      </p>
-      <h1 className="font-display text-5xl md:text-7xl tracking-wider text-ink uppercase mb-6">
-        Thank You
-      </h1>
-
-      {/* Message */}
-      <p className="font-serif text-base italic text-taupe max-w-md leading-relaxed mb-12">
-        Your order has been received. Check your email for confirmation details. 
-        We will be in touch shortly to arrange everything.
-      </p>
-
-      {/* Divider */}
-      <div className="flex items-center gap-4 mb-12 w-full max-w-xs">
-        <span className="h-px flex-1 bg-taupe-light" />
-        <span className="font-mono text-[9px] uppercase tracking-widest text-taupe">FYNDE</span>
-        <span className="h-px flex-1 bg-taupe-light" />
-      </div>
-
-      {/* CTA */}
-      <Link
-        href="/shop"
-        className="font-mono text-xs uppercase tracking-widest text-ink border border-ink px-8 py-4 hover:bg-ink hover:text-ivory transition-colors min-h-[44px] flex items-center"
-      >
-        Continue Shopping
-      </Link>
-
     </main>
   )
 }
