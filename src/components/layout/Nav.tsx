@@ -36,11 +36,11 @@ export default function Nav() {
         <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-6 mix-blend-multiply">
           {/* Left links */}
           <div className="flex gap-8 items-center">
-            {navLinks.slice(0, 2).map((link) => (
+            {navLinks.slice(0,2).map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors group"
+                className="relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors"
                 style={{ color: isActive(link.href) ? '#A8401A' : 'rgba(28,25,23,0.5)' }}
               >
                 {link.label}
@@ -62,7 +62,7 @@ export default function Nav() {
 
           {/* Right links */}
           <div className="flex gap-8 items-center">
-            {navLinks.slice(2).map((link) => (
+            {navLinks.slice(2,4).map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -90,7 +90,7 @@ export default function Nav() {
       {/* Mobile Top Header */}
       {isMobile && (
         <div
-         id="mobile-header"
+          id="mobile-header"
           className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 bg-parchment border-b border-taupe-light"
           style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: '1rem' }}
         >
@@ -115,7 +115,7 @@ export default function Nav() {
           {[
             { href: '/', label: 'Home' },
             { href: '/shop', label: 'Shop' },
-            { href: '/collections/80s', label: 'Archive' },
+            { href: '/collections', label: 'Collection' },
             { href: '/lookbook', label: 'Lookbook' },
             { href: '/about', label: 'About' },
           ].map((link) => (
@@ -124,7 +124,6 @@ export default function Nav() {
               href={link.href}
               className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center relative"
             >
-              {/* Active dot */}
               {isActive(link.href) && (
                 <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-sienna" />
               )}

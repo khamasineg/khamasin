@@ -37,13 +37,16 @@ export default function ShopGrid() {
 
   if (loading) {
     return (
-      <div className="px-6 py-12 md:px-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="px-6 py-12 md:px-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="bg-taupe-light aspect-[3/4] w-full mb-3" />
-              <div className="h-3 bg-taupe-light rounded w-2/3 mb-2" />
-              <div className="h-3 bg-taupe-light rounded w-1/3" />
+            <div key={i} className="animate-pulse border border-taupe-light">
+              <div className="bg-taupe-light aspect-[3/4] w-full" />
+              <div className="p-3 border-t border-taupe-light">
+                <div className="h-2 bg-taupe-light rounded w-1/2 mb-2" />
+                <div className="h-3 bg-taupe-light rounded w-2/3 mb-2" />
+                <div className="h-2 bg-taupe-light rounded w-1/3" />
+              </div>
             </div>
           ))}
         </div>
@@ -53,11 +56,14 @@ export default function ShopGrid() {
 
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 px-6">
-        <p className="font-mono text-xs uppercase tracking-widest text-taupe mb-4">
+      <div className="flex flex-col items-center justify-center py-32 px-6 text-center">
+        <div className="w-12 h-12 border border-taupe-light flex items-center justify-center mb-6">
+          <span className="font-mono text-sienna text-sm">✦</span>
+        </div>
+        <p className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-taupe mb-3">
           No pieces found
         </p>
-        <p className="font-serif text-sm italic text-taupe">
+        <p className="font-serif italic text-taupe text-sm">
           Try adjusting your filters
         </p>
       </div>
@@ -65,16 +71,22 @@ export default function ShopGrid() {
   }
 
   return (
-    <div className="px-6 py-8 md:px-16 md:py-12">
+    <div className="px-6 py-8 md:px-10 md:py-12">
       {/* Count */}
-      <p className="font-mono text-[9px] uppercase tracking-widest text-taupe mb-6">
-        {products.length} {products.length === 1 ? 'piece' : 'pieces'} found
+      <p
+        className="font-mono text-[0.5rem] uppercase tracking-[0.22em] mb-8 flex items-center gap-3"
+        style={{ color: 'rgba(28,25,23,0.4)' }}
+      >
+        <span className="h-px w-6 bg-taupe-light inline-block" />
+        {products.length} {products.length === 1 ? 'piece' : 'pieces'} in the archive
       </p>
 
-      {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      {/* Grid — no gap, borders do the separation */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 border-t border-l border-taupe-light">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <div key={product.id} className="border-b border-r border-taupe-light">
+            <ProductCard product={product} />
+          </div>
         ))}
       </div>
     </div>

@@ -10,14 +10,26 @@ export const metadata = {
 export default function ShopPage() {
   return (
     <main className="min-h-screen bg-parchment">
+
       {/* Header */}
-      <div className="px-6 pt-32 pb-8 md:px-16 md:pt-40">
-        <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mb-2">
+      <div className="px-6 pt-32 pb-12 md:px-10 md:pt-40 border-b border-taupe-light">
+        <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-taupe mb-4 flex items-center gap-3">
+          <span className="h-px w-6 bg-taupe-light inline-block" />
           The full archive
         </p>
-        <h1 className="font-display text-5xl md:text-8xl tracking-wider text-ink uppercase">
-          Shop
+        <h1
+          className="font-serif font-light leading-[0.9] mb-4"
+          style={{ fontSize: 'clamp(3.5rem, 8vw, 8rem)' }}
+        >
+          The<br />
+          <em className="italic text-sienna">Archive.</em>
         </h1>
+        <p
+          className="font-mono text-[0.6rem] leading-loose tracking-wide max-w-sm"
+          style={{ color: 'rgba(28,25,23,0.5)' }}
+        >
+          Every piece sourced by hand. One of one. When it is gone, it is gone.
+        </p>
       </div>
 
       {/* Filter Bar */}
@@ -27,8 +39,8 @@ export default function ShopPage() {
 
       {/* Product Grid */}
       <Suspense fallback={
-        <div className="px-6 py-12 md:px-16">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="px-6 py-12 md:px-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="bg-taupe-light aspect-[3/4] w-full mb-3" />

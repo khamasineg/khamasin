@@ -18,7 +18,7 @@ export default function Footer() {
       <ul className="flex flex-wrap items-center justify-center gap-6 list-none">
         {[
           { href: '/shop', label: 'Shop' },
-          { href: '/collections/60s', label: 'Collections' },
+          { href: '/collections', label: 'Collections' },
           { href: '/lookbook', label: 'Lookbook' },
           { href: '/about', label: 'About' },
         ].map((link) => (

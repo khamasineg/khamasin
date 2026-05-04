@@ -22,10 +22,9 @@ export default function ProductCard({ product }: { product: Product }) {
   }
 
   return (
-    <Link href={`/shop/${product.slug}`} className="group block">
-
+<Link href={`/shop/${product.slug}`} className="group block">
       {/* Image */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-taupe-light mb-3">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-taupe-light">
         {product.images?.[0] ? (
           <img
             src={product.images[0]}
@@ -58,10 +57,10 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Hover overlay — slides up */}
+        {/* Hover overlay */}
         {!product.sold && (
           <div
-            className="absolute inset-0 z-10 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-400"
+            className="absolute inset-0 z-10 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             style={{
               background: 'linear-gradient(to top, rgba(28,25,23,0.75) 0%, transparent 55%)',
             }}
@@ -84,11 +83,11 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
 
       {/* Info */}
-      <div>
+      <div className="p-3 border-t border-taupe-light">
         <span className="font-mono text-[0.5rem] uppercase tracking-[0.25em] text-sienna block mb-1">
           {product.era} · {product.brand} · {product.sizes?.join(', ')}
         </span>
-        <p className="font-serif text-sm text-ink group-hover:text-sienna transition-colors leading-snug mb-1">
+        <p className="font-serif text-sm text-ink group-hover:text-sienna transition-colors leading-snug mb-2">
           {product.name}
         </p>
         <div className="flex items-center justify-between">
@@ -100,6 +99,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </p>
         </div>
       </div>
+
     </Link>
   )
 }

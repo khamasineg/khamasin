@@ -1,26 +1,30 @@
-import { Suspense } from 'react'
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import ProductCard from '@/components/shop/ProductCard'
+import Link from 'next/link'
 
-const eraDetails: Record<string, { label: string; description: string; years: string }> = {
+const eraDetails: Record<string, { label: string; sub: string; description: string; years: string }> = {
   '60s': {
-    label: 'The Sixties 60s',
+    label: 'The Sixties',
+    sub: 'Mod & Psychedelic',
     description: 'Mod cuts, bold prints, the birth of youth culture. A decade that rewrote the rules of dress.',
     years: '1960 — 1969',
   },
   '70s': {
-    label: 'The Seventies 70s',
+    label: 'The Seventies',
+    sub: 'Boho & Disco',
     description: 'Flared silhouettes, earthy tones, free spirit energy. Fashion as self-expression at its peak.',
     years: '1970 — 1979',
   },
   '80s': {
-    label: 'The Eighties 80s',
+    label: 'The Eighties',
+    sub: 'Power & New Wave',
     description: 'Power shoulders, deadstock sportswear, collector-grade pieces. A decade of excess and identity.',
     years: '1980 — 1989',
   },
   '90s': {
-    label: 'The Nineties 90s',
+    label: 'The Nineties',
+    sub: 'Grunge & Minimal',
     description: 'Grunge, workwear, the last era of true deadstock. Raw, minimal, and endlessly referenced.',
     years: '1990 — 1999',
   },
@@ -47,43 +51,81 @@ export default async function EraPage({ params }: { params: { era: string } }) {
 
   return (
     <main className="min-h-screen bg-parchment">
+
       {/* Header */}
-      <div className="px-6 pt-32 pb-12 md:px-16 md:pt-40 border-b border-taupe-light">
-        <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mb-2">
+      <div className="px-6 pt-32 pb-12 md:px-10 md:pt-40 border-b border-taupe-light">
+        <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-taupe mb-4 flex items-center gap-3">
+          <span className="h-px w-6 bg-taupe-light inline-block" />
           {era.years}
         </p>
-        <h1 className="font-display text-5xl md:text-8xl tracking-wider text-ink uppercase mb-4">
-          {era.label}
+        <h1
+          className="font-serif font-light leading-[0.9] mb-4"
+          style={{ fontSize: 'clamp(3.5rem, 8vw, 8rem)' }}
+        >
+          {era.label.split(' ')[0]}<br />
+          <em className="italic text-sienna">
+            {era.label.split(' ').slice(1).join(' ')}.
+          </em>
         </h1>
-        <p className="font-serif text-base italic text-taupe max-w-xl leading-relaxed">
+        <p
+          className="font-mono text-[0.6rem] leading-loose tracking-wide max-w-sm mb-6"
+          style={{ color: 'rgba(28,25,23,0.5)' }}
+        >
           {era.description}
         </p>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/collections"
+            className="font-mono text-[0.5rem] uppercase tracking-[0.22em] flex items-center gap-2 transition-colors hover:text-sienna"
+            style={{ color: 'rgba(28,25,23,0.4)' }}
+          >
+            ← All Collections
+          </Link>
+          <span className="h-px w-4 bg-taupe-light" />
+          <span className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-sienna">
+            {era.sub}
+          </span>
+        </div>
       </div>
 
       {/* Products */}
-      <div className="px-6 py-12 md:px-16">
-        {!products || products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-3">
-            <p className="font-mono text-xs uppercase tracking-widest text-taupe">
-              No pieces available
-            </p>
-            <p className="font-serif text-sm italic text-taupe">
-              Check back soon — new finds added weekly
-            </p>
+      {!products || products.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-32 px-6 text-center">
+          <div className="w-12 h-12 border border-taupe-light flex items-center justify-center mb-6">
+            <span className="font-mono text-sienna text-sm">✦</span>
           </div>
-        ) : (
-          <>
-            <p className="font-mono text-[9px] uppercase tracking-widest text-taupe mb-6">
-              {products.length} {products.length === 1 ? 'piece' : 'pieces'} from this era
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+          <p className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-taupe mb-3">
+            No pieces available
+          </p>
+          <p className="font-serif italic text-taupe text-sm mb-8">
+            Check back soon — new finds added weekly
+          </p>
+          <Link
+            href="/shop"
+            className="font-mono text-[0.55rem] uppercase tracking-[0.22em] border border-ink text-ink px-6 py-3 hover:bg-ink hover:text-ivory transition-colors min-h-[44px] flex items-center"
+          >
+            Browse All Pieces
+          </Link>
+        </div>
+      ) : (
+        <div className="px-6 py-8 md:px-10 md:py-12">
+          <p
+            className="font-mono text-[0.5rem] uppercase tracking-[0.22em] mb-8 flex items-center gap-3"
+            style={{ color: 'rgba(28,25,23,0.4)' }}
+          >
+            <span className="h-px w-6 bg-taupe-light inline-block" />
+            {products.length} {products.length === 1 ? 'piece' : 'pieces'} from this era
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 border-t border-l border-taupe-light">
+            {products.map((product) => (
+              <div key={product.id} className="border-b border-r border-taupe-light">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </main>
   )
 }

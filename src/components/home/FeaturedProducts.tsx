@@ -48,7 +48,7 @@ export default function FeaturedProducts() {
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="bg-taupe-light aspect-[3/4] w-full mb-3" />
@@ -64,7 +64,7 @@ export default function FeaturedProducts() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4  md:gap-6">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -72,7 +72,7 @@ export default function FeaturedProducts() {
       )}
 
       {/* Mobile view all */}
-      <div className="mt-8 md:hidden">
+      <div className="mt-10 md:hidden">
         <Link
           href="/shop"
           className="flex items-center justify-center w-full border border-ink text-ink font-mono text-xs uppercase tracking-widest py-4 hover:bg-ink hover:text-ivory transition-colors min-h-[44px]"
