@@ -90,6 +90,7 @@ export default function Nav() {
       {/* Mobile Top Header */}
       {isMobile && (
         <div
+         id="mobile-header"
           className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 bg-parchment border-b border-taupe-light"
           style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: '1rem' }}
         >
