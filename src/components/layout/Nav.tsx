@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { useCart } from '@/hooks/useCart'
 
 export default function Nav() {
   const [isMobile, setIsMobile] = useState(false)
   const { itemCount, openCart } = useCart()
+  const pathname = usePathname()
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -14,121 +16,125 @@ export default function Nav() {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  const isActive = (path: string) => {
+    if (path === '/') return pathname === '/'
+    return pathname.startsWith(path)
+  }
+
+  const navLinks = [
+    { href: '/shop', label: 'Shop' },
+    { href: '/collections', label: 'Collections' },
+    { href: '/lookbook', label: 'Lookbook' },
+    { href: '/about', label: 'About' },
+  ]
+
   return (
     <>
       {/* Desktop Nav */}
       {!isMobile && (
-        <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 mix-blend-multiply">
+        <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-6 mix-blend-multiply">
           {/* Left links */}
-          <div className="flex gap-8">
-            <Link
-              href="/shop"
-              className="font-mono text-xs uppercase tracking-widest text-ink hover:text-sienna transition-colors"
-            >
-              Shop
-            </Link>
-            <Link
-              href="/collections"
-              className="font-mono text-xs uppercase tracking-widest text-ink hover:text-sienna transition-colors"
-            >
-              Collections
-            </Link>
-            <Link
-              href="/lookbook"
-              className="font-mono text-xs uppercase tracking-widest text-ink hover:text-sienna transition-colors"
-            >
-              Lookbook
-            </Link>
+          <div className="flex gap-8 items-center">
+            {navLinks.slice(0, 2).map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors group"
+                style={{ color: isActive(link.href) ? '#A8401A' : 'rgba(28,25,23,0.5)' }}
+              >
+                {link.label}
+                <span
+                  className="absolute -bottom-1 left-0 h-px bg-sienna transition-all duration-300"
+                  style={{ width: isActive(link.href) ? '100%' : '0%' }}
+                />
+              </Link>
+            ))}
           </div>
 
           {/* Center logo */}
           <Link
             href="/"
-            className="absolute left-1/2 -translate-x-1/2 font-display text-2xl tracking-widest text-ink hover:text-sienna transition-colors"
+            className="absolute left-1/2 -translate-x-1/2 font-display text-2xl tracking-[0.14em] text-ink hover:text-sienna transition-colors duration-300"
           >
             FYNDE
           </Link>
 
           {/* Right links */}
           <div className="flex gap-8 items-center">
-            <Link
-              href="/about"
-              className="font-mono text-xs uppercase tracking-widest text-ink hover:text-sienna transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="/account"
-              className="font-mono text-xs uppercase tracking-widest text-ink hover:text-sienna transition-colors"
-            >
-              Account
-            </Link>
+            {navLinks.slice(2).map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors"
+                style={{ color: isActive(link.href) ? '#A8401A' : 'rgba(28,25,23,0.5)' }}
+              >
+                {link.label}
+                <span
+                  className="absolute -bottom-1 left-0 h-px bg-sienna transition-all duration-300"
+                  style={{ width: isActive(link.href) ? '100%' : '0%' }}
+                />
+              </Link>
+            ))}
             <button
               onClick={openCart}
-              className="font-mono text-xs uppercase tracking-widest text-ink hover:text-sienna transition-colors"
+              className="font-mono text-[0.58rem] uppercase tracking-[0.22em] border border-ink px-4 py-2 hover:bg-ink hover:text-ivory transition-colors duration-300"
+              style={{ color: '#1C1917' }}
             >
-              Cart {itemCount > 0 && `(${itemCount})`}
+              Bag {itemCount > 0 && `(${itemCount})`}
             </button>
           </div>
         </nav>
       )}
-{/* Mobile Top Header */}
-{isMobile && (
-    <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-taupe-light bg-parchment px-6">
-    <Link href="/" className="font-display text-xl tracking-widest text-ink">
-      FYNDE
-    </Link>
-    <button
-      onClick={openCart}
-      className="font-mono text-[10px] uppercase tracking-widest text-ink min-w-[44px] min-h-[44px] flex items-center justify-end"
-    >
-      Cart {itemCount > 0 && `(${itemCount})`}
-    </button>
-  </div>
-)}
-      {/* Mobile Bottom Navigation */}
+
+      {/* Mobile Top Header */}
       {isMobile && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-taupe bg-parchment px-4 py-3">
-          <Link
-            href="/"
-            className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center"
-          >
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink">
-              Home
-            </span>
-          </Link>
-          <Link
-            href="/shop"
-            className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center"
-          >
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink">
-              Shop
-            </span>
-          </Link>
-          <Link
-            href="/collections"
-            className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center"
-          >
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink">
-              Collections
-            </span>
-          </Link>
-          <Link
-            href="/lookbook"
-            className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center"
-          >
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink">
-              Lookbook
-            </span>
+        <div
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 bg-parchment border-b border-taupe-light"
+          style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: '1rem' }}
+        >
+          <Link href="/" className="font-display text-xl tracking-widest text-ink">
+            FYNDE
           </Link>
           <button
             onClick={openCart}
-            className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center"
+            className="font-mono text-[10px] uppercase tracking-widest text-ink min-w-[44px] min-h-[44px] flex items-center justify-end"
           >
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink">
-              Cart {itemCount > 0 && `(${itemCount})`}
-            </span>
+            Bag {itemCount > 0 && `(${itemCount})`}
           </button>
+        </div>
+      )}
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-taupe bg-parchment px-4"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))', paddingTop: '0.75rem' }}
+        >
+          {[
+            { href: '/', label: 'Home' },
+            { href: '/shop', label: 'Shop' },
+            { href: '/collections/80s', label: 'Archive' },
+            { href: '/lookbook', label: 'Lookbook' },
+            { href: '/about', label: 'About' },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center relative"
+            >
+              {/* Active dot */}
+              {isActive(link.href) && (
+                <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-sienna" />
+              )}
+              <span
+                className="font-mono text-[10px] uppercase tracking-widest transition-colors"
+                style={{ color: isActive(link.href) ? '#A8401A' : '#1C1917' }}
+              >
+                {link.label}
+              </span>
+            </Link>
+          ))}
         </nav>
       )}
     </>
