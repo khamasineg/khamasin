@@ -55,7 +55,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Sold overlay */}
-        {/* Hover overlay */}
+       {/* Hover overlay */}
 {!product.sold && (
   <div
     className="absolute inset-0 z-10 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -65,23 +65,26 @@ export default function ProductCard({ product }: { product: Product }) {
   >
     <button
       onClick={handleAddToCart}
-      className="relative w-full overflow-hidden font-mono text-[0.55rem] uppercase tracking-[0.2em] border border-ivory py-3 transition-colors duration-200 group/btn"
+      className="relative w-full overflow-hidden font-mono text-[0.55rem] uppercase tracking-[0.2em] py-3 border group/btn"
       style={{
-        color: added ? '#1C1917' : '#FAF6F0',
-        background: added ? '#FAF6F0' : 'transparent',
+        borderColor: added ? '#A8401A' : '#FAF6F0',
+        background: added ? '#A8401A' : 'transparent',
+        color: added ? '#FAF6F0' : '#FAF6F0',
       }}
     >
-      {/* Sienna slide-in background */}
+      {/* Slide-in ivory fill on hover */}
       {!added && (
         <span
-          className="absolute inset-0 bg-ivory -translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300"
-          style={{ transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)' }}
+          className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300"
+          style={{
+            background: '#FAF6F0',
+            transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)',
+          }}
         />
       )}
-      <span
-        className="relative z-10 transition-colors duration-200"
-        style={{ color: added ? '#1C1917' : undefined }}
-      >
+
+      {/* Text — switches color on hover via peer trick */}
+      <span className="relative z-10 text-ivory group-hover/btn:text-ink transition-colors duration-300">
         {added
           ? '✦ Added to Bag'
           : product.sizes?.length === 1
@@ -91,6 +94,7 @@ export default function ProductCard({ product }: { product: Product }) {
     </button>
   </div>
 )}
+
       </div>
 
       {/* Info */}
