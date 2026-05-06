@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import EraGrid from '@/components/shop/EraGrid'
 import Link from 'next/link'
 
+export const revalidate = 60
+
 const eraDetails: Record<string, { label: string; sub: string; description: string; years: string }> = {
   '60s': {
     label: 'The Sixties',
