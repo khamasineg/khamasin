@@ -1,7 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
-import ProductCard from '@/components/shop/ProductCard'
+import ProductGrid from '@/components/shop/ProductGrid'
 import Link from 'next/link'
+
+export const revalidate = 60
 
 const eraDetails: Record<string, { label: string; sub: string; description: string; years: string }> = {
   '60s': {
@@ -108,22 +110,7 @@ export default async function EraPage({ params }: { params: { era: string } }) {
           </Link>
         </div>
       ) : (
-        <div className="px-6 py-8 md:px-10 md:py-12">
-          <p
-            className="font-mono text-[0.5rem] uppercase tracking-[0.22em] mb-8 flex items-center gap-3"
-            style={{ color: 'rgba(28,25,23,0.4)' }}
-          >
-            <span className="h-px w-6 bg-taupe-light inline-block" />
-            {products.length} {products.length === 1 ? 'piece' : 'pieces'} from this era
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 border-t border-l border-taupe-light">
-            {products.map((product) => (
-              <div key={product.id} className="border-b border-r border-taupe-light">
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
-        </div>
+        <ProductGrid products={products} label="from this era" />
       )}
 
     </main>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Product } from '@/types'
-import ProductCard from './ProductCard'
+import ProductGrid from './ProductGrid'
 
 export default function ShopGrid() {
   const searchParams = useSearchParams()
@@ -70,25 +70,5 @@ export default function ShopGrid() {
     )
   }
 
-  return (
-    <div className="px-6 py-8 md:px-10 md:py-12">
-      {/* Count */}
-      <p
-        className="font-mono text-[0.5rem] uppercase tracking-[0.22em] mb-8 flex items-center gap-3"
-        style={{ color: 'rgba(28,25,23,0.4)' }}
-      >
-        <span className="h-px w-6 bg-taupe-light inline-block" />
-        {products.length} {products.length === 1 ? 'piece' : 'pieces'} in the archive
-      </p>
-
-      {/* Grid — no gap, borders do the separation */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 border-t border-l border-taupe-light">
-        {products.map((product) => (
-          <div key={product.id} className="border-b border-r border-taupe-light">
-            <ProductCard product={product} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  return <ProductGrid products={products} />
 }
