@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'www.fyndethevintage.com',
+    url: 'https://www.fyndethevintage.com',
     siteName: 'FYNDE',
     title: 'FYNDE — Rare finds, beautifully worn.',
     description: 'Curated vintage & deadstock clothing from the 60s through the 90s. One of one pieces, carefully sourced. Based in Cairo, Egypt.',

@@ -12,6 +12,6 @@ export default function robots(): MetadataRoute.Robots {
         '/account',
       ],
     },
-    sitemap: 'www.fyndethevintage.com/sitemap.xml',
+    sitemap: 'https://www.fyndethevintage.com/sitemap.xml',
   }
 }
