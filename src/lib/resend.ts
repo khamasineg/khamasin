@@ -208,8 +208,8 @@ export async function sendOrderConfirmationEmail({
   `
 
   return resend.emails.send({
-    from: 'FYNDE <onboarding@resend.dev>',
-    to: 'fyndethevintage@gmail.com',
+    from: 'FYNDE <orders@fyndethevintage.com>',
+    to: customerEmail,
     subject: `&#10022; Your FYNDE order is confirmed, ${firstName}.`,
     html,
   })
