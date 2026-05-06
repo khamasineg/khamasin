@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'www.fyndethevintage.com'
+  const baseUrl = 'https://www.fyndethevintage.com'
 
   // Fetch all products
   const { data: products } = await supabase

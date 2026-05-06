@@ -11,7 +11,7 @@ import Loader from '@/components/ui/Loader'
 import SmoothScroll from '@/components/ui/SmoothScroll'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('www.fyndethevintage.com'),
+  metadataBase: new URL('https://www.fyndethevintage.com'),
   title: {
     default: 'FYNDE — Rare finds, beautifully worn.',
     template: '%s — FYNDE',
