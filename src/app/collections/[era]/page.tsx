@@ -1,9 +1,6 @@
-import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
-import ProductGrid from '@/components/shop/ProductGrid'
+import EraGrid from '@/components/shop/EraGrid'
 import Link from 'next/link'
-
-export const revalidate = 60
 
 const eraDetails: Record<string, { label: string; sub: string; description: string; years: string }> = {
   '60s': {
@@ -41,15 +38,9 @@ export async function generateMetadata({ params }: { params: { era: string } }) 
   }
 }
 
-export default async function EraPage({ params }: { params: { era: string } }) {
+export default function EraPage({ params }: { params: { era: string } }) {
   const era = eraDetails[params.era]
   if (!era) notFound()
-
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .eq('era', params.era)
-    .order('created_at', { ascending: false })
 
   return (
     <main className="min-h-screen bg-parchment">
@@ -91,27 +82,7 @@ export default async function EraPage({ params }: { params: { era: string } }) {
       </div>
 
       {/* Products */}
-      {!products || products.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 px-6 text-center">
-          <div className="w-12 h-12 border border-taupe-light flex items-center justify-center mb-6">
-            <span className="font-mono text-sienna text-sm">✦</span>
-          </div>
-          <p className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-taupe mb-3">
-            No pieces available
-          </p>
-          <p className="font-serif italic text-taupe text-sm mb-8">
-            Check back soon — new finds added weekly
-          </p>
-          <Link
-            href="/shop"
-            className="font-mono text-[0.55rem] uppercase tracking-[0.22em] border border-ink text-ink px-6 py-3 hover:bg-ink hover:text-ivory transition-colors min-h-[44px] flex items-center"
-          >
-            Browse All Pieces
-          </Link>
-        </div>
-      ) : (
-        <ProductGrid products={products} label="from this era" />
-      )}
+      <EraGrid era={params.era} />
 
     </main>
   )
