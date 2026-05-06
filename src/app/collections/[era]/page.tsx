@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import ProductGrid from '@/components/shop/ProductGrid'
 import Link from 'next/link'
 
-export const revalidate = 0.001
+export const revalidate = 1
 
 const eraDetails: Record<string, { label: string; sub: string; description: string; years: string }> = {
   '60s': {
