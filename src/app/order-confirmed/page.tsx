@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 
 type Order = {
   id: string
@@ -27,6 +26,7 @@ type Order = {
 function OrderConfirmedContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('id')
+  const orderToken = searchParams.get('token')
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -37,18 +37,23 @@ function OrderConfirmedContent() {
         return
       }
 
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', orderId)
-        .single()
+      if (!orderToken) {
+        setLoading(false)
+        return
+      }
 
-      if (!error && data) setOrder(data)
+      const res = await fetch(`/api/orders?id=${encodeURIComponent(orderId)}&token=${encodeURIComponent(orderToken)}`, {
+        cache: 'no-store',
+      })
+      const result = await res.json()
+      if (result?.success && result.order) {
+        setOrder(result.order)
+      }
       setLoading(false)
     }
 
     fetchOrder()
-  }, [orderId])
+  }, [orderId, orderToken])
 
   if (loading) {
     return (
@@ -125,6 +130,7 @@ function OrderConfirmedContent() {
                     <img
                       src={item.product.images[0]}
                       alt={item.product.name}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   </div>

@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { escapeHtml } from './order-security'
 
 export const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -19,22 +20,28 @@ export async function sendOrderConfirmationEmail({
   address: string
   city: string
 }) {
-  const firstName = customerName.split(' ')[0]
+  const firstName = escapeHtml(customerName.split(' ')[0] || 'Customer')
+  const safeAddress = escapeHtml(address)
+  const safeCity = escapeHtml(city)
 
   const itemRows = items
     .map(
-      (item) => `
+      (item) => {
+        const safeName = escapeHtml(item.name)
+        const safeSize = escapeHtml(item.size)
+        const safeImage = item.image && /^https:\/\//i.test(item.image) ? item.image : ''
+        return `
         <tr>
           <td style="padding: 16px 0; border-bottom: 1px solid #D9CFC4;">
             <table cellpadding="0" cellspacing="0">
               <tr>
-                ${item.image ? `
+                ${safeImage ? `
                 <td style="padding-right: 16px; vertical-align: top;">
-                  <img src="${item.image}" alt="${item.name}" width="60" height="75" style="display: block; width: 60px; height: 75px; object-fit: cover;" />
+                  <img src="${safeImage}" alt="${safeName}" width="60" height="75" style="display: block; width: 60px; height: 75px; object-fit: cover;" />
                 </td>` : ''}
                 <td style="vertical-align: top;">
-                  <p style="font-family: Georgia, serif; font-size: 14px; color: #1C1917; margin: 0 0 4px;">${item.name}</p>
-                  <p style="font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: #BEB0A0; margin: 0;">Size: ${item.size}</p>
+                  <p style="font-family: Georgia, serif; font-size: 14px; color: #1C1917; margin: 0 0 4px;">${safeName}</p>
+                  <p style="font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: #BEB0A0; margin: 0;">Size: ${safeSize}</p>
                 </td>
               </tr>
             </table>
@@ -44,6 +51,7 @@ export async function sendOrderConfirmationEmail({
           </td>
         </tr>
       `
+      }
     )
     .join('')
 
@@ -142,7 +150,7 @@ export async function sendOrderConfirmationEmail({
                 <tr>
                   <td width="50%" style="vertical-align: top; padding-right: 16px;">
                     <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0 0 8px;">Delivery To</p>
-                    <p style="font-family: 'Courier New', monospace; font-size: 12px; color: #1C1917; margin: 0; line-height: 1.6;">${address}<br/>${city}</p>
+                    <p style="font-family: 'Courier New', monospace; font-size: 12px; color: #1C1917; margin: 0; line-height: 1.6;">${safeAddress}<br/>${safeCity}</p>
                   </td>
                   <td width="50%" style="vertical-align: top; padding-left: 16px; border-left: 1px solid #D9CFC4;">
                     <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0 0 8px;">Payment</p>

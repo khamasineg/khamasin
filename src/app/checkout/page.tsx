@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCart } from '@/hooks/useCart'
 import { useRouter } from 'next/navigation'
 
@@ -77,25 +77,32 @@ const [submitted, setSubmitted] = useState(false)
           `${form.notes ? `Notes: ${form.notes}\n` : ''}` +
           `\nPayment: InstaPay — please share your InstaPay number.\n\nThank you!`
 
+        const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
+        if (!whatsappNumber) {
+          throw new Error('WhatsApp contact is unavailable')
+        }
         const encoded = encodeURIComponent(message)
-        window.open(`https://wa.me/201050545699?text=${encoded}`, '_blank')
+        window.open(`https://wa.me/${whatsappNumber}?text=${encoded}`, '_blank')
       }
 
       setSubmitted(true)
 clearCart()
-router.push(`/order-confirmed?id=${data.order.id}`)
+router.push(`/order-confirmed?id=${data.order.id}&token=${encodeURIComponent(data.token)}`)
     } catch (error) {
-      console.error(error)
+      console.error('Checkout submission failed')
       setErrors({ submit: 'Something went wrong. Please try again.' })
     } finally {
       setLoading(false)
     }
   }
 
-  if (items.length === 0 && !submitted) {
-    router.push('/shop')
-    return null
-  }
+  useEffect(() => {
+    if (items.length === 0 && !submitted) {
+      router.push('/shop')
+    }
+  }, [items.length, submitted, router])
+
+  if (items.length === 0 && !submitted) return null
 
   return (
     <main className="min-h-screen bg-parchment">

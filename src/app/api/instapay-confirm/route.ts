@@ -1,28 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { sendOrderConfirmationEmail } from '@/lib/resend'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import {
+  createOrderViewToken,
+  isAllowedOrigin,
+  isRateLimited,
+  validateOrderPayload,
+} from '@/lib/order-security'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function corsHeaders(origin: string | null) {
+  return {
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Origin': origin ?? '*',
+    Vary: 'Origin',
+  }
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get('origin')
+  if (!isAllowedOrigin(origin)) {
+    return new NextResponse(null, { status: 403 })
+  }
+  return new NextResponse(null, { status: 204, headers: corsHeaders(origin) })
+}
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json()
-    const {
-      name,
-      phone,
-      email,
-      address,
-      city,
-      notes,
-      paymentMethod,
-      items,
-      total,
-    } = body
+  const origin = req.headers.get('origin')
+  if (!isAllowedOrigin(origin)) {
+    return NextResponse.json({ success: false, error: 'Origin not allowed' }, { status: 403 })
+  }
 
-    const { data: order, error: orderError } = await supabase
+  const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (isRateLimited(`instapay:${clientIp}`)) {
+    return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429, headers: corsHeaders(origin) })
+  }
+
+  try {
+    const rawBody = await req.json()
+    const validation = validateOrderPayload(rawBody)
+    if (!validation.valid) {
+      return NextResponse.json({ success: false, error: validation.error }, { status: 400, headers: corsHeaders(origin) })
+    }
+    const { name, phone, email, address, city, notes, paymentMethod, items, total } = validation.data
+
+    const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         customer_email: email,
@@ -44,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     if (paymentMethod === 'cod') {
       const productIds = items.map((item: { product: { id: string } }) => item.product.id)
-      await supabase
+      await supabaseAdmin
         .from('products')
         .update({ sold: true })
         .in('id', productIds)
@@ -64,12 +86,18 @@ export async function POST(req: NextRequest) {
         city,
       })
 
-      console.log('Email result:', JSON.stringify(emailResult, null, 2))
+      if (!emailResult?.data?.id) {
+        console.error('Failed to queue COD confirmation email')
+      }
     }
 
-    return NextResponse.json({ success: true, order })
+    const token = createOrderViewToken(order.id)
+    return NextResponse.json(
+      { success: true, order: { id: order.id }, token, whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? '' },
+      { headers: corsHeaders(origin) }
+    )
   } catch (error) {
-    console.error('Order error:', error)
-    return NextResponse.json({ success: false, error }, { status: 500 })
+    console.error('InstaPay route failure')
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500, headers: corsHeaders(origin) })
   }
 }
