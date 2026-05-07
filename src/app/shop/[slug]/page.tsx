@@ -1,12 +1,13 @@
-import { supabase } from '@/lib/supabase'
+import { createServerSupabase } from '@/lib/supabase-server'
 import ProductDetail from '@/components/shop/ProductDetail'
 import { notFound } from 'next/navigation'
 
-// Always fetch fresh product data — never serve a cached version
-// (product images/prices can be edited from the admin at any time)
+// Always render on request — never serve a cached version.
+// Product images/prices can be edited from admin at any time.
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const supabase = createServerSupabase()
   const { data: product } = await supabase
     .from('products')
     .select('name, era, brand, condition, price')
@@ -26,6 +27,9 @@ export default async function ProductPage({
 }: {
   params: { slug: string }
 }) {
+  // Fresh client per request — bypasses Next.js data cache entirely
+  const supabase = createServerSupabase()
+
   const { data: product, error } = await supabase
     .from('products')
     .select('*')
