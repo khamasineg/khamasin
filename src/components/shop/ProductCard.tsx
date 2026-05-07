@@ -3,12 +3,14 @@
 import Link from 'next/link'
 import { Product } from '@/types'
 import { useCart } from '@/hooks/useCart'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem, openCart } = useCart()
   const [added, setAdded] = useState(false)
+  const [imgIdx, setImgIdx] = useState(0)
+  const touchStartX = useRef<number>(0)
   const router = useRouter()
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -27,13 +29,43 @@ export default function ProductCard({ product }: { product: Product }) {
     router.push(`/shop/${product.slug}`)
   }
 
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (product.sold) return
+
+    if (product.sizes?.length === 1) {
+      addItem(product, product.sizes[0])
+      router.push('/checkout')
+    } else {
+      router.push(`/shop/${product.slug}`)
+    }
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    const total = product.images?.length ?? 1
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) setImgIdx(i => Math.min(i + 1, total - 1))
+      else setImgIdx(i => Math.max(i - 1, 0))
+    }
+  }
+
   const cardContent = (
     <>
       {/* Image */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-taupe-light">
-        {product.images?.[0] ? (
+      <div
+        className="relative aspect-[3/4] w-full overflow-hidden bg-taupe-light"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {product.images?.[imgIdx] ? (
           <img
-            src={product.images[0]}
+            src={product.images[imgIdx]}
             alt={product.name}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
             style={{
@@ -56,6 +88,24 @@ export default function ProductCard({ product }: { product: Product }) {
             <span className="font-mono text-[9px] uppercase tracking-widest text-ivory bg-sienna px-2 py-1">
               {product.era}
             </span>
+          </div>
+        )}
+
+        {/* Image dots — only when multiple images and not sold */}
+        {!product.sold && (product.images?.length ?? 0) > 1 && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex gap-1">
+            {product.images.map((_, i) => (
+              <span
+                key={i}
+                style={{
+                  width: imgIdx === i ? 14 : 5,
+                  height: 5,
+                  background: imgIdx === i ? '#A8401A' : 'rgba(250,246,240,0.7)',
+                  display: 'inline-block',
+                  transition: 'width 0.2s ease, background 0.2s',
+                }}
+              />
+            ))}
           </div>
         )}
 
@@ -152,7 +202,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         ) : (
           <button
-            onClick={handleAddToCart}
+            onClick={handleBuyNow}
             className="relative w-full overflow-hidden font-mono text-[0.5rem] uppercase tracking-[0.22em] py-2.5 border border-ink group/buy mb-1"
             style={{ color: '#1C1917' }}
           >
@@ -161,7 +211,7 @@ export default function ProductCard({ product }: { product: Product }) {
               style={{ transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)' }}
             />
             <span className="relative z-10 group-hover/buy:text-ivory transition-colors duration-300">
-              {added ? '✦ Added' : product.sizes?.length === 1 ? 'Add to Bag' : 'Shop Now →'}
+              {product.sizes?.length === 1 ? 'Buy Now →' : 'Shop Now →'}
             </span>
           </button>
         )}

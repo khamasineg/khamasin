@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Product } from '@/types'
 import { useCart } from '@/hooks/useCart'
 
@@ -9,6 +9,20 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [added, setAdded] = useState(false)
   const { addItem, openCart } = useCart()
+  const touchStartX = useRef<number>(0)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    const total = product.images?.length ?? 1
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) setSelectedImage(i => Math.min(i + 1, total - 1))
+      else setSelectedImage(i => Math.max(i - 1, 0))
+    }
+  }
 
   const handleAddToCart = () => {
     if (!selectedSize) return
@@ -25,7 +39,11 @@ export default function ProductDetail({ product }: { product: Product }) {
         {/* Left — Images */}
         <div className="flex flex-col gap-3">
           {/* Main image */}
-          <div className="relative aspect-[3/4] w-full overflow-hidden bg-taupe-light">
+          <div
+            className="relative aspect-[3/4] w-full overflow-hidden bg-taupe-light"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             {product.images?.[selectedImage] ? (
               <img
                 src={product.images[selectedImage]}
@@ -50,62 +68,26 @@ export default function ProductDetail({ product }: { product: Product }) {
               </span>
             </div>
 
-            {/* Prev / Next arrows — only when multiple images */}
+            {/* Dot indicator — only when multiple images */}
             {product.images?.length > 1 && (
-              <>
-                <button
-                  onClick={() => setSelectedImage(i => (i - 1 + product.images.length) % product.images.length)}
-                  aria-label="Previous image"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center"
-                  style={{
-                    width: 36, height: 36,
-                    background: 'rgba(250,246,240,0.9)',
-                    border: '1px solid rgba(28,25,23,0.15)',
-                    color: '#1C1917',
-                    fontSize: 16,
-                    cursor: 'pointer',
-                    backdropFilter: 'blur(4px)',
-                  }}
-                >
-                  ←
-                </button>
-                <button
-                  onClick={() => setSelectedImage(i => (i + 1) % product.images.length)}
-                  aria-label="Next image"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center"
-                  style={{
-                    width: 36, height: 36,
-                    background: 'rgba(250,246,240,0.9)',
-                    border: '1px solid rgba(28,25,23,0.15)',
-                    color: '#1C1917',
-                    fontSize: 16,
-                    cursor: 'pointer',
-                    backdropFilter: 'blur(4px)',
-                  }}
-                >
-                  →
-                </button>
-
-                {/* Dot indicator */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
-                  {product.images.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedImage(i)}
-                      aria-label={`Go to image ${i + 1}`}
-                      style={{
-                        width: selectedImage === i ? 18 : 6,
-                        height: 6,
-                        background: selectedImage === i ? '#A8401A' : 'rgba(250,246,240,0.7)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        transition: 'width 0.25s ease, background 0.2s',
-                      }}
-                    />
-                  ))}
-                </div>
-              </>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
+                {product.images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedImage(i)}
+                    aria-label={`Go to image ${i + 1}`}
+                    style={{
+                      width: selectedImage === i ? 18 : 6,
+                      height: 6,
+                      background: selectedImage === i ? '#A8401A' : 'rgba(250,246,240,0.7)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                      transition: 'width 0.25s ease, background 0.2s',
+                    }}
+                  />
+                ))}
+              </div>
             )}
 
             {/* Sold overlay */}

@@ -156,11 +156,11 @@ export default function FeaturedProducts() {
             <div
               key={product.id}
               style={{
-                flex: '0 0 calc(50% - 0.5px)',
+                flex: '0 0 calc(50vw - 32px)',
                 scrollSnapAlign: 'start',
                 borderRight: '1px solid rgba(209,196,183,0.5)',
               }}
-              className="md:flex-[0_0_calc(25%_-_0.5px)]"
+              className="md:!flex-[0_0_calc(25vw_-_32px)]"
             >
               <ProductCard product={product} />
             </div>
