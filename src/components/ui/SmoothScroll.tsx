@@ -1,12 +1,17 @@
 'use client'
 
 import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import Lenis from 'lenis'
 
 export default function SmoothScroll() {
+  const pathname = usePathname()
+  const isAdmin = pathname.startsWith('/admin')
+
   useEffect(() => {
-    // Desktop only
-    if (window.innerWidth < 768) return
+    // Desktop only, and never on admin routes (admin scrolls inside a fixed div
+    // that Lenis cannot reach, causing wheel events to be eaten)
+    if (window.innerWidth < 768 || isAdmin) return
 
     const lenis = new Lenis({
       duration: 1.2,
@@ -27,7 +32,7 @@ export default function SmoothScroll() {
       cancelAnimationFrame(rafId)
       lenis.destroy()
     }
-  }, [])
+  }, [isAdmin])
 
   return null
 }
