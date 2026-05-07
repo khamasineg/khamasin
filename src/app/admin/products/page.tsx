@@ -3,6 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+// ── Cloudinary upload helper ─────────────────────────────────────────────────
+
+async function uploadToCloudinary(file: File): Promise<string> {
+  const fd = new FormData()
+  fd.append('file', file)
+  const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+  const json = await res.json()
+  if (!res.ok) throw new Error(json.error ?? 'Upload failed')
+  return json.url as string
+}
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type SoldInOrder = {
@@ -81,6 +92,8 @@ export default function AdminProductsPage() {
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState('')
   const [newImageUrl, setNewImageUrl] = useState('')
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null)
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([])
 
   // ── Data loading ───────────────────────────────────────────────────────────
 
@@ -615,55 +628,109 @@ export default function AdminProductsPage() {
 
           {/* Images */}
           <div>
-            <p style={{ ...label, marginBottom: '0.5rem' }}>Image URLs</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <p style={{ ...label, marginBottom: '0.5rem' }}>Images</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {form.images.map((url, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                  {/* Thumbnail preview */}
-                  <div style={{
-                    width: '36px', height: '44px', flexShrink: 0,
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    overflow: 'hidden',
-                  }}>
-                    {url?.startsWith('http') && (
-                      <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <div key={idx}>
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    {/* Thumbnail preview */}
+                    <div style={{
+                      width: '40px', height: '50px', flexShrink: 0,
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      overflow: 'hidden', position: 'relative',
+                    }}>
+                      {uploadingIdx === idx ? (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ ...mono, fontSize: '8px', color: '#A8401A' }}>↑</span>
+                        </div>
+                      ) : url?.startsWith('http') ? (
+                        <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      ) : null}
+                    </div>
+
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      {/* URL input */}
+                      <input
+                        style={{ ...inputStyle, fontSize: '11px' }}
+                        value={url}
+                        onChange={e => {
+                          const newImgs = [...form.images]
+                          newImgs[idx] = e.target.value.trim()
+                          setForm(f => ({ ...f, images: newImgs }))
+                        }}
+                        placeholder={`Paste Cloudinary URL…`}
+                      />
+                      {/* Upload from device button */}
+                      <button
+                        type="button"
+                        disabled={uploadingIdx !== null}
+                        onClick={() => fileInputRefs.current[idx]?.click()}
+                        style={{
+                          ...mono, fontSize: '7px', letterSpacing: '0.14em', textTransform: 'uppercase',
+                          padding: '0.25rem 0.5rem', cursor: uploadingIdx !== null ? 'not-allowed' : 'pointer',
+                          background: uploadingIdx === idx ? 'rgba(168,64,26,0.15)' : 'rgba(255,255,255,0.04)',
+                          color: uploadingIdx === idx ? '#A8401A' : 'rgba(190,176,160,0.5)',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          textAlign: 'left', width: '100%',
+                        }}
+                      >
+                        {uploadingIdx === idx ? '↑ Uploading…' : '↑ Upload from device'}
+                      </button>
+                    </div>
+
+                    {/* Hidden file input */}
+                    <input
+                      ref={el => { fileInputRefs.current[idx] = el }}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={async e => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        e.target.value = ''
+                        setUploadingIdx(idx)
+                        try {
+                          const uploadedUrl = await uploadToCloudinary(file)
+                          const newImgs = [...form.images]
+                          newImgs[idx] = uploadedUrl
+                          setForm(f => ({ ...f, images: newImgs }))
+                        } catch (err) {
+                          setFormError(err instanceof Error ? err.message : 'Upload failed')
+                        } finally {
+                          setUploadingIdx(null)
+                        }
+                      }}
+                    />
+
+                    {/* Remove button */}
+                    {form.images.length > 1 && (
+                      <button
+                        onClick={() => setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== idx) }))}
+                        style={{
+                          ...mono, fontSize: '14px', color: 'rgba(168,64,26,0.7)',
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          padding: '0 0.25rem', lineHeight: 1, flexShrink: 0,
+                        }}
+                      >
+                        ✕
+                      </button>
                     )}
                   </div>
-                  <input
-                    style={{ ...inputStyle, flex: 1 }}
-                    value={url}
-                    onChange={e => {
-                      const newImgs = [...form.images]
-                      newImgs[idx] = e.target.value
-                      setForm(f => ({ ...f, images: newImgs }))
-                    }}
-                    placeholder={`Image URL ${idx + 1}`}
-                  />
-                  {form.images.length > 1 && (
-                    <button
-                      onClick={() => setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== idx) }))}
-                      style={{
-                        ...mono, fontSize: '14px', color: 'rgba(168,64,26,0.7)',
-                        background: 'none', border: 'none', cursor: 'pointer', padding: '0 0.25rem', lineHeight: 1,
-                        flexShrink: 0,
-                      }}
-                    >
-                      ✕
-                    </button>
-                  )}
                 </div>
               ))}
+
+              {/* Add slot */}
               <button
                 onClick={() => setForm(f => ({ ...f, images: [...f.images, ''] }))}
                 style={{
                   ...mono, fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase',
                   color: 'rgba(190,176,160,0.5)', background: 'rgba(255,255,255,0.04)',
-                  border: '1px dashed rgba(255,255,255,0.1)', padding: '0.4rem', cursor: 'pointer',
+                  border: '1px dashed rgba(255,255,255,0.1)', padding: '0.5rem', cursor: 'pointer',
                   width: '100%', textAlign: 'center',
                 }}
               >
-                + Add image URL
+                + Add another image
               </button>
             </div>
           </div>

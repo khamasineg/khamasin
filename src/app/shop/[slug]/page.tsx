@@ -2,6 +2,10 @@ import { supabase } from '@/lib/supabase'
 import ProductDetail from '@/components/shop/ProductDetail'
 import { notFound } from 'next/navigation'
 
+// Always fetch fresh product data — never serve a cached version
+// (product images/prices can be edited from the admin at any time)
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { data: product } = await supabase
     .from('products')

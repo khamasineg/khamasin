@@ -1,23 +1,4 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-
 export default function Ticker() {
-  const [topOffset, setTopOffset] = useState(60)
-
-  useEffect(() => {
-    const updateOffset = () => {
-      const header = document.getElementById('mobile-header')
-      if (header) {
-        setTopOffset(header.getBoundingClientRect().height)
-      }
-    }
-
-    updateOffset()
-    window.addEventListener('resize', updateOffset)
-    return () => window.removeEventListener('resize', updateOffset)
-  }, [])
-
   const items = [
     'Rare finds, beautifully worn',
     'One of one pieces',
@@ -28,10 +9,7 @@ export default function Ticker() {
   const repeated = [...items, ...items, ...items]
 
   return (
-    <div
-      className="fixed left-0 right-0 z-40 h-8 w-full overflow-hidden bg-sienna md:static md:top-auto md:h-auto md:py-2"
-      style={{ top: `${topOffset}px` }}
-    >
+    <div className="relative w-full overflow-hidden bg-sienna h-8 md:h-auto md:py-2">
       <div
         className="flex h-full items-center whitespace-nowrap"
         style={{ animation: 'ticker 30s linear infinite' }}
