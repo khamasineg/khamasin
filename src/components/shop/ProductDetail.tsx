@@ -30,7 +30,7 @@ export default function ProductDetail({ product }: { product: Product }) {
               <img
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -41,7 +41,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             )}
 
             {/* Era stamp */}
-            <div className="absolute top-4 left-4 flex gap-2">
+            <div className="absolute top-4 left-4 flex gap-2 z-10">
               <span className="font-mono text-[9px] uppercase tracking-widest text-ivory border border-ivory/40 px-2 py-1 bg-ink/20">
                 {product.era}
               </span>
@@ -50,9 +50,67 @@ export default function ProductDetail({ product }: { product: Product }) {
               </span>
             </div>
 
+            {/* Prev / Next arrows — only when multiple images */}
+            {product.images?.length > 1 && (
+              <>
+                <button
+                  onClick={() => setSelectedImage(i => (i - 1 + product.images.length) % product.images.length)}
+                  aria-label="Previous image"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center"
+                  style={{
+                    width: 36, height: 36,
+                    background: 'rgba(250,246,240,0.9)',
+                    border: '1px solid rgba(28,25,23,0.15)',
+                    color: '#1C1917',
+                    fontSize: 16,
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  ←
+                </button>
+                <button
+                  onClick={() => setSelectedImage(i => (i + 1) % product.images.length)}
+                  aria-label="Next image"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center"
+                  style={{
+                    width: 36, height: 36,
+                    background: 'rgba(250,246,240,0.9)',
+                    border: '1px solid rgba(28,25,23,0.15)',
+                    color: '#1C1917',
+                    fontSize: 16,
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  →
+                </button>
+
+                {/* Dot indicator */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
+                  {product.images.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImage(i)}
+                      aria-label={`Go to image ${i + 1}`}
+                      style={{
+                        width: selectedImage === i ? 18 : 6,
+                        height: 6,
+                        background: selectedImage === i ? '#A8401A' : 'rgba(250,246,240,0.7)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                        transition: 'width 0.25s ease, background 0.2s',
+                      }}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
             {/* Sold overlay */}
             {product.sold && (
-              <div className="absolute inset-0 bg-parchment/70 flex items-center justify-center">
+              <div className="absolute inset-0 bg-parchment/70 flex items-center justify-center z-10">
                 <span className="font-mono text-xs uppercase tracking-widest text-ink">
                   Sold
                 </span>
@@ -69,7 +127,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                   onClick={() => setSelectedImage(i)}
                   className={`relative flex-shrink-0 w-16 h-20 overflow-hidden border transition-colors ${
                     selectedImage === i
-                      ? 'border-ink'
+                      ? 'border-sienna'
                       : 'border-taupe-light hover:border-taupe'
                   }`}
                 >

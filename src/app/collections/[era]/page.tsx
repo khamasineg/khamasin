@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: { era: string } }) 
   const era = eraDetails[params.era]
   if (!era) return {}
   return {
-    title: `${era.label} — FYNDE`,
+    title: era.label,
     description: era.description,
   }
 }

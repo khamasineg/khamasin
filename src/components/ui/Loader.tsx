@@ -1,12 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function Loader() {
-  const [visible, setVisible] = useState(true)
+  const pathname = usePathname()
+  const isAdmin = pathname.startsWith('/admin')
+
+  const [visible, setVisible] = useState(!isAdmin)
   const [exiting, setExiting] = useState(false)
 
   useEffect(() => {
+    // Never show the loader on admin routes
+    if (isAdmin) { setVisible(false); return }
+
     // Start exit after 2.4 seconds
     const exitTimer = setTimeout(() => {
       setExiting(true)
@@ -21,7 +28,7 @@ export default function Loader() {
       clearTimeout(exitTimer)
       clearTimeout(removeTimer)
     }
-  }, [])
+  }, [isAdmin])
 
   if (!visible) return null
 

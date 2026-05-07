@@ -669,12 +669,34 @@ export default function OrdersPage() {
                       <div className="pi-price">EGP {Number(item.product.price).toLocaleString()}</div>
                     </div>
                   ))}
-                  <div className="pi-total">
-                    <span className="pi-total-lbl" style={{display:'inline-flex',alignItems:'center',gap:'6px'}}>
-                      {o.payment_method === 'cod' ? 'Cash on Delivery' : <><InstapayIcon size={15} /> InstaPay</>}
-                    </span>
-                    <span className="pi-total-val">EGP {Number(o.total).toLocaleString()}</span>
-                  </div>
+                  {/* Coupon / discount breakdown */}
+                  {o.coupon_code && o.discount_amount ? (
+                    <div style={{ paddingTop: 12, marginTop: 4, borderTop: '1px solid #1E1C1A' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                        <span style={{ fontFamily: "'Instrument Mono',monospace", fontSize: 10, letterSpacing: '.2em', textTransform: 'uppercase', color: '#3A3836' }}>Subtotal</span>
+                        <span style={{ fontFamily: "'Instrument Mono',monospace", fontSize: 12, color: '#6A6864' }}>EGP {(Number(o.total) + Number(o.discount_amount)).toLocaleString()}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <span style={{ fontFamily: "'Instrument Mono',monospace", fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: '#A8401A', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          ✦ {o.coupon_code}
+                        </span>
+                        <span style={{ fontFamily: "'Instrument Mono',monospace", fontSize: 12, color: '#A8401A' }}>−EGP {Number(o.discount_amount).toLocaleString()}</span>
+                      </div>
+                      <div className="pi-total">
+                        <span className="pi-total-lbl" style={{display:'inline-flex',alignItems:'center',gap:'6px'}}>
+                          {o.payment_method === 'cod' ? 'Cash on Delivery' : <><InstapayIcon size={15} /> InstaPay</>}
+                        </span>
+                        <span className="pi-total-val">EGP {Number(o.total).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pi-total">
+                      <span className="pi-total-lbl" style={{display:'inline-flex',alignItems:'center',gap:'6px'}}>
+                        {o.payment_method === 'cod' ? 'Cash on Delivery' : <><InstapayIcon size={15} /> InstaPay</>}
+                      </span>
+                      <span className="pi-total-val">EGP {Number(o.total).toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Bosta Shipping — only show for active orders */}

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Collections — FYNDE',
+  title: 'Collections',
   description: 'Browse FYNDE by era — rare vintage and deadstock from the 60s through the 90s.',
 }
 

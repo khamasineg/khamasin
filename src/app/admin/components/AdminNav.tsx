@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 const NAV_LINKS = [
   { href: '/admin', label: 'Dashboard' },
@@ -77,7 +78,7 @@ export default function AdminNav() {
               {NAV_LINKS.map(link => {
                 const active = isActive(link.href)
                 return (
-                  <a
+                  <Link
                     key={link.href}
                     href={link.href}
                     style={{
@@ -97,7 +98,7 @@ export default function AdminNav() {
                     onMouseLeave={e => { if (!active) (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(190,176,160,0.5)' }}
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 )
               })}
             </div>
@@ -202,7 +203,7 @@ export default function AdminNav() {
           {NAV_LINKS.map((link, i) => {
             const active = isActive(link.href)
             return (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 style={{
@@ -220,7 +221,7 @@ export default function AdminNav() {
                 }}
               >
                 {link.label}
-              </a>
+              </Link>
             )
           })}
 
