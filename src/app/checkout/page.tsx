@@ -89,7 +89,7 @@ const [submitted, setSubmitted] = useState(false)
 clearCart()
 router.push(`/order-confirmed?id=${data.order.id}&token=${encodeURIComponent(data.token)}`)
     } catch (error) {
-      console.error('Checkout submission failed')
+      console.error('Checkout submission failed:', error)
       setErrors({ submit: 'Something went wrong. Please try again.' })
     } finally {
       setLoading(false)
