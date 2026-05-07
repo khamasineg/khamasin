@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!product) return {}
 
   return {
-    title: `${product.name} — FYNDE`,
+    title: product.name,
     description: `${product.era} · ${product.brand} · ${product.condition} — ${product.price.toLocaleString()} EGP. One of one vintage piece, available now at FYNDE.`,
   }
 }

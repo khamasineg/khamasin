@@ -3,7 +3,7 @@ import ShopGrid from '@/components/shop/ShopGrid'
 import FilterBar from '@/components/shop/FilterBar'
 
 export const metadata = {
-  title: 'Shop — FYNDE',
+  title: 'Shop',
   description: 'Browse the full FYNDE archive. Rare vintage and deadstock pieces from the 60s through the 90s.',
 }
 

@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Lookbook — FYNDE',
+  title: 'Lookbook',
   description: 'Editorial looks from the FYNDE archive.',
 }
 

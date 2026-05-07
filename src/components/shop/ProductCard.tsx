@@ -117,7 +117,7 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
 
       {/* Info */}
-      <div className="p-3 border-t border-taupe-light">
+      <div className="p-3 border-t border-taupe-light flex flex-col">
         <span
           className="font-mono text-[0.5rem] uppercase tracking-[0.25em] block mb-1"
           style={{ color: product.sold ? '#BEB0A0' : '#A8401A' }}
@@ -130,7 +130,7 @@ export default function ProductCard({ product }: { product: Product }) {
         >
           {product.name}
         </p>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <p
             className="font-mono text-xs"
             style={{ color: product.sold ? '#BEB0A0' : '#1C1917' }}
@@ -141,6 +141,30 @@ export default function ProductCard({ product }: { product: Product }) {
             {product.sold ? 'Unavailable' : product.condition}
           </p>
         </div>
+
+        {/* Buy Now / Sold button */}
+        {product.sold ? (
+          <div
+            className="w-full font-mono text-[0.5rem] uppercase tracking-[0.22em] py-2.5 text-center border border-taupe-light mb-1"
+            style={{ color: '#BEB0A0' }}
+          >
+            Sold — Gone Forever
+          </div>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            className="relative w-full overflow-hidden font-mono text-[0.5rem] uppercase tracking-[0.22em] py-2.5 border border-ink group/buy mb-1"
+            style={{ color: '#1C1917' }}
+          >
+            <span
+              className="absolute inset-0 -translate-x-full group-hover/buy:translate-x-0 transition-transform duration-300 bg-sienna"
+              style={{ transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)' }}
+            />
+            <span className="relative z-10 group-hover/buy:text-ivory transition-colors duration-300">
+              {added ? '✦ Added' : product.sizes?.length === 1 ? 'Add to Bag' : 'Shop Now →'}
+            </span>
+          </button>
+        )}
       </div>
     </>
   )
