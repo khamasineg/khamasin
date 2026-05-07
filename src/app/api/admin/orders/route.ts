@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const { orderId, status } = await req.json()
 
-    const validStatuses = ['delivered', 'cancelled']
+    const validStatuses = ['pending', 'confirmed', 'delivered', 'cancelled']
     if (!orderId || !validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
