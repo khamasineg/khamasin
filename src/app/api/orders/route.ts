@@ -144,37 +144,42 @@ export async function POST(req: NextRequest) {
         })
     }
 
-    // Mark products as sold for COD orders
+    // Mark products as sold for COD orders immediately
     if (paymentMethod === 'cod') {
       await supabaseAdmin
         .from('products')
         .update({ sold: true })
         .in('id', productIds)
-
-      // Send confirmation email for COD
-      const emailResult = await sendOrderConfirmationEmail({
-        customerEmail: email,
-        customerName: name,
-        orderNumber: order.order_number ?? undefined,
-        items: items.map((item: { product: { name: string; price: number }; size: string }) => ({
-          name: item.product.name,
-          size: item.size,
-          price: item.product.price,
-        })),
-        total,
-        paymentMethod,
-        address,
-        city,
-        couponCode: appliedCouponCode ?? undefined,
-        discountAmount: discountAmount > 0 ? discountAmount : undefined,
-      })
-
-      if (!emailResult?.data?.id) {
-        console.error('Failed to queue COD confirmation email for order:', order.id)
-      }
     }
 
-    // ── Admin notifications (fire-and-forget — never blocks user response) ──
+    // ── Customer confirmation email (all payment methods) ──────────────────
+    const confirmationEmailItems = items.map((item: { product: { name: string; price: number; images?: string[] }; size: string }) => ({
+      name: item.product.name,
+      size: item.size,
+      price: item.product.price,
+      image: item.product.images?.[0] ?? undefined,
+    }))
+
+    sendOrderConfirmationEmail({
+      customerEmail: email,
+      customerName: name,
+      orderNumber: order.order_number ?? undefined,
+      items: confirmationEmailItems,
+      total,
+      paymentMethod,
+      address,
+      city,
+      couponCode: appliedCouponCode ?? undefined,
+      discountAmount: discountAmount > 0 ? discountAmount : undefined,
+    }).then(result => {
+      if (!result?.data?.id) {
+        console.error('[FYNDE] Customer confirmation email failed for order:', order.id, result?.error)
+      }
+    }).catch(err => {
+      console.error('[FYNDE] Customer confirmation email threw for order:', order.id, err)
+    })
+
+    // ── Admin notifications ────────────────────────────────────────────────
     const orderRef = order.order_number ? `#${order.order_number}` : `#${order.id.slice(0, 8).toUpperCase()}`
     const notifItems = items.map((item: { product: { name: string; price: number }; size: string }) => ({
       name: item.product.name,
@@ -182,7 +187,7 @@ export async function POST(req: NextRequest) {
       price: item.product.price,
     }))
 
-    // Email to admin Gmail
+    // Admin email — awaited so the error shows in Vercel function logs
     sendAdminOrderNotification({
       orderRef,
       customerName: name,
@@ -196,6 +201,9 @@ export async function POST(req: NextRequest) {
       couponCode: appliedCouponCode,
       discountAmount: discountAmount > 0 ? discountAmount : null,
       notes: notes || null,
+    }).catch(err => {
+      // Never blocks the response — just surfaces the error in logs
+      console.error('[FYNDE] Admin notification email threw:', err)
     })
 
     // Telegram push (only fires if TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID are set)
