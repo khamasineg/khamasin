@@ -253,3 +253,118 @@ export async function sendOrderConfirmationEmail({
     html,
   })
 }
+
+// ─── Admin notification email ─────────────────────────────────────────────────
+
+export async function sendAdminOrderNotification(params: {
+  orderRef: string
+  customerName: string
+  customerEmail: string
+  phone: string
+  address: string
+  city: string
+  paymentMethod: string
+  items: Array<{ name: string; size: string; price: number }>
+  total: number
+  couponCode?: string | null
+  discountAmount?: number | null
+  notes?: string | null
+}): Promise<void> {
+  const {
+    orderRef, customerName, customerEmail, phone, address, city,
+    paymentMethod, items, total, couponCode, discountAmount, notes,
+  } = params
+
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL ?? 'fyndethevintage@gmail.com'
+  const payLabel = paymentMethod === 'cod' ? 'Cash on Delivery' : 'InstaPay'
+
+  const itemRows = items.map(i => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #2A2521;font-family:'Courier New',monospace;font-size:12px;color:#FAF6F0;">${escapeHtml(i.name)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #2A2521;font-family:'Courier New',monospace;font-size:12px;color:#BEB0A0;text-align:center;">${escapeHtml(i.size)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #2A2521;font-family:'Courier New',monospace;font-size:12px;color:#FAF6F0;text-align:right;">${i.price.toLocaleString()} EGP</td>
+    </tr>`).join('')
+
+  const couponRow = couponCode && discountAmount ? `
+    <tr>
+      <td colspan="2" style="padding:8px 12px;font-family:'Courier New',monospace;font-size:11px;color:#A8401A;">Coupon: ${escapeHtml(couponCode)}</td>
+      <td style="padding:8px 12px;font-family:'Courier New',monospace;font-size:12px;color:#A8401A;text-align:right;">−${discountAmount.toLocaleString()} EGP</td>
+    </tr>` : ''
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#0F0D0B;font-family:'Courier New',monospace;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+      <!-- Header -->
+      <tr><td style="background:#1C1917;padding:24px 32px;border-bottom:2px solid #A8401A;">
+        <p style="font-family:'Courier New',monospace;font-size:18px;letter-spacing:0.3em;color:#FAF6F0;margin:0 0 4px;">FYNDE</p>
+        <p style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#A8401A;margin:0;">
+          ✦ New Order — ${escapeHtml(orderRef)}
+        </p>
+      </td></tr>
+
+      <!-- Customer -->
+      <tr><td style="background:#1C1917;padding:20px 32px;border-bottom:1px solid #2A2521;">
+        <p style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#BEB0A0;margin:0 0 12px;">Customer</p>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:4px 0;font-family:'Courier New',monospace;font-size:13px;color:#FAF6F0;font-weight:bold;">${escapeHtml(customerName)}</td>
+          </tr>
+          <tr><td style="padding:4px 0;font-size:12px;color:#BEB0A0;">${escapeHtml(customerEmail)}</td></tr>
+          <tr><td style="padding:4px 0;font-size:12px;color:#BEB0A0;">${escapeHtml(phone)}</td></tr>
+          <tr><td style="padding:4px 0;font-size:12px;color:#BEB0A0;">${escapeHtml(address)}, ${escapeHtml(city)}</td></tr>
+          ${notes ? `<tr><td style="padding:4px 0;font-size:11px;color:#6A6864;font-style:italic;">Note: ${escapeHtml(notes)}</td></tr>` : ''}
+        </table>
+      </td></tr>
+
+      <!-- Payment badge -->
+      <tr><td style="background:#1C1917;padding:12px 32px;border-bottom:1px solid #2A2521;">
+        <span style="display:inline-block;background:${paymentMethod === 'cod' ? 'rgba(74,222,128,0.15)' : 'rgba(0,87,184,0.2)'};border:1px solid ${paymentMethod === 'cod' ? 'rgba(74,222,128,0.4)' : 'rgba(0,87,184,0.4)'};padding:4px 12px;font-family:'Courier New',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:${paymentMethod === 'cod' ? '#4ade80' : '#60a5fa'};">
+          ${payLabel}
+        </span>
+      </td></tr>
+
+      <!-- Items -->
+      <tr><td style="background:#1C1917;padding:20px 32px;">
+        <p style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#BEB0A0;margin:0 0 12px;">Order Items</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #2A2521;">
+          <tr>
+            <th style="padding:8px 12px;font-family:'Courier New',monospace;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:#6A6864;text-align:left;border-bottom:1px solid #2A2521;font-weight:normal;">Item</th>
+            <th style="padding:8px 12px;font-family:'Courier New',monospace;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:#6A6864;text-align:center;border-bottom:1px solid #2A2521;font-weight:normal;">Size</th>
+            <th style="padding:8px 12px;font-family:'Courier New',monospace;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:#6A6864;text-align:right;border-bottom:1px solid #2A2521;font-weight:normal;">Price</th>
+          </tr>
+          ${itemRows}
+          ${couponRow}
+          <tr>
+            <td colspan="2" style="padding:12px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#BEB0A0;border-top:1px solid #A8401A;">Total</td>
+            <td style="padding:12px;font-family:'Courier New',monospace;font-size:16px;color:#FAF6F0;text-align:right;font-weight:bold;border-top:1px solid #A8401A;">${total.toLocaleString()} EGP</td>
+          </tr>
+        </table>
+      </td></tr>
+
+      <!-- Footer -->
+      <tr><td style="background:#111;padding:12px 32px;text-align:center;">
+        <p style="font-family:'Courier New',monospace;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:#3A3836;margin:0;">
+          FYNDE Admin Notification · ${new Date().toLocaleString('en-GB', { timeZone: 'Africa/Cairo' })} Cairo
+        </p>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body></html>`
+
+  try {
+    await resend.emails.send({
+      from: 'FYNDE Orders <orders@fyndethevintage.com>',
+      to: adminEmail,
+      subject: `🛍 New order ${orderRef} — ${customerName} (${payLabel})`,
+      html,
+    })
+  } catch (err) {
+    // Non-critical — never crash the order flow
+    console.error('Admin notification email failed:', err)
+  }
+}

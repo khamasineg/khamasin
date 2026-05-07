@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useCart } from '@/hooks/useCart'
 import { useRouter } from 'next/navigation'
+import InstapayIcon from '@/components/icons/InstapayIcon'
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
@@ -365,32 +366,45 @@ router.push(`/order-confirmed?id=${data.order.id}&token=${encodeURIComponent(dat
           </p>
 
           <div className="grid grid-cols-2 gap-0 border border-taupe-light mb-4">
-            {[
-              { id: 'instapay', title: 'InstaPay', sub: 'Transfer online' },
-              { id: 'cod', title: 'Cash', sub: 'Pay on delivery' },
-            ].map((method, i) => (
-              <button
-                key={method.id}
-                onClick={() => {
-                  setPaymentMethod(method.id as 'instapay' | 'cod')
-                  setErrors({ ...errors, payment: '' })
-                }}
-                className="flex flex-col items-center justify-center gap-2 p-6 min-h-[80px] transition-colors duration-200 relative"
-                style={{
-                  background: paymentMethod === method.id ? '#1C1917' : 'transparent',
-                  borderRight: i === 0 ? '1px solid #D9CFC4' : 'none',
-                  color: paymentMethod === method.id ? '#FAF6F0' : '#1C1917',
-                }}
-              >
-                <span className="font-serif italic text-lg">{method.title}</span>
-                <span className="font-mono text-[0.45rem] uppercase tracking-[0.2em] opacity-60">
-                  {method.sub}
-                </span>
-                {paymentMethod === method.id && (
-                  <span className="absolute top-2 right-2 font-mono text-[0.4rem] text-sienna">✦</span>
-                )}
-              </button>
-            ))}
+            {/* InstaPay option */}
+            <button
+              onClick={() => { setPaymentMethod('instapay'); setErrors({ ...errors, payment: '' }) }}
+              className="flex flex-col items-center justify-center gap-2 p-6 min-h-[88px] transition-colors duration-200 relative"
+              style={{
+                background: paymentMethod === 'instapay' ? '#1C1917' : 'transparent',
+                borderRight: '1px solid #D9CFC4',
+                color: paymentMethod === 'instapay' ? '#FAF6F0' : '#1C1917',
+              }}
+            >
+              <InstapayIcon size={22} />
+              <span className="font-serif italic text-lg">InstaPay</span>
+              <span className="font-mono text-[0.45rem] uppercase tracking-[0.2em] opacity-60">Transfer online</span>
+              {paymentMethod === 'instapay' && (
+                <span className="absolute top-2 right-2 font-mono text-[0.4rem] text-sienna">✦</span>
+              )}
+            </button>
+
+            {/* Cash on delivery option */}
+            <button
+              onClick={() => { setPaymentMethod('cod'); setErrors({ ...errors, payment: '' }) }}
+              className="flex flex-col items-center justify-center gap-2 p-6 min-h-[88px] transition-colors duration-200 relative"
+              style={{
+                background: paymentMethod === 'cod' ? '#1C1917' : 'transparent',
+                color: paymentMethod === 'cod' ? '#FAF6F0' : '#1C1917',
+              }}
+            >
+              {/* Cash icon */}
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M6 12h.01M18 12h.01"/>
+              </svg>
+              <span className="font-serif italic text-lg">Cash</span>
+              <span className="font-mono text-[0.45rem] uppercase tracking-[0.2em] opacity-60">Pay on delivery</span>
+              {paymentMethod === 'cod' && (
+                <span className="absolute top-2 right-2 font-mono text-[0.4rem] text-sienna">✦</span>
+              )}
+            </button>
           </div>
 
           {errors.payment && (
