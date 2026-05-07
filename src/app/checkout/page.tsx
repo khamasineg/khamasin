@@ -19,8 +19,60 @@ export default function CheckoutPage() {
 
   const [paymentMethod, setPaymentMethod] = useState<'instapay' | 'cod' | null>(null)
   const [loading, setLoading] = useState(false)
-const [errors, setErrors] = useState<Record<string, string>>({})
-const [submitted, setSubmitted] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [submitted, setSubmitted] = useState(false)
+
+  // Coupon state
+  const [couponInput, setCouponInput] = useState('')
+  const [couponLoading, setCouponLoading] = useState(false)
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string
+    type: 'percentage' | 'fixed'
+    value: number
+    discountAmount: number
+  } | null>(null)
+  const [couponError, setCouponError] = useState('')
+
+  const itemsSubtotal = total()
+  const discountAmount = appliedCoupon?.discountAmount ?? 0
+  const finalTotal = itemsSubtotal - discountAmount
+
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase()
+    if (!code) return
+    setCouponLoading(true)
+    setCouponError('')
+    try {
+      const res = await fetch('/api/validate-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, orderTotal: itemsSubtotal }),
+      })
+      const data = await res.json()
+      if (!data.valid) {
+        setCouponError(data.error ?? 'Invalid coupon')
+        setAppliedCoupon(null)
+      } else {
+        setAppliedCoupon({
+          code: data.code,
+          type: data.type,
+          value: data.value,
+          discountAmount: data.discountAmount,
+        })
+        setCouponError('')
+      }
+    } catch {
+      setCouponError('Could not validate coupon. Try again.')
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponInput('')
+    setCouponError('')
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -55,7 +107,8 @@ const [submitted, setSubmitted] = useState(false)
           ...form,
           paymentMethod,
           items,
-          total: total(),
+          total: finalTotal,
+          couponCode: appliedCoupon?.code ?? '',
         }),
       })
 
@@ -70,7 +123,8 @@ const [submitted, setSubmitted] = useState(false)
         const message =
           `Hello FYNDE! I'd like to place an order:\n\n` +
           `${orderLines}\n\n` +
-          `Total: ${total().toLocaleString()} EGP\n\n` +
+          (appliedCoupon ? `Coupon: ${appliedCoupon.code} (−${appliedCoupon.discountAmount.toLocaleString()} EGP)\n` : '') +
+          `Total: ${finalTotal.toLocaleString()} EGP\n\n` +
           `Name: ${form.name}\n` +
           `Phone: ${form.phone}\n` +
           `Address: ${form.address}, ${form.city}\n` +
@@ -158,15 +212,88 @@ router.push(`/order-confirmed?id=${data.order.id}&token=${encodeURIComponent(dat
                 </div>
               </div>
             ))}
-            {/* Total */}
-            <div className="flex justify-between items-center p-4 bg-ivory">
-              <span className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-taupe">
-                Total
-              </span>
-              <span className="font-mono text-base text-ink">
-                {total().toLocaleString()} EGP
-              </span>
+            {/* Coupon code input */}
+            <div className="border-t border-taupe-light p-4">
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-mono text-[0.45rem] uppercase tracking-[0.2em] text-sienna">
+                      ✦ Coupon applied: {appliedCoupon.code}
+                    </span>
+                    <p className="font-mono text-[0.42rem] uppercase tracking-[0.15em] text-taupe mt-0.5">
+                      {appliedCoupon.type === 'percentage'
+                        ? `${appliedCoupon.value}% off`
+                        : `${appliedCoupon.value.toLocaleString()} EGP off`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleRemoveCoupon}
+                    className="font-mono text-[0.42rem] uppercase tracking-[0.15em] text-taupe hover:text-sienna transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex gap-0">
+                    <input
+                      type="text"
+                      value={couponInput}
+                      onChange={(e) => {
+                        setCouponInput(e.target.value.toUpperCase())
+                        setCouponError('')
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                      placeholder="Coupon code"
+                      className="flex-1 bg-transparent border border-taupe-light border-r-0 px-3 py-2 font-mono text-xs text-ink placeholder:text-taupe outline-none focus:border-ink transition-colors"
+                      style={{ minHeight: '40px' }}
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponInput.trim()}
+                      className="font-mono text-[0.45rem] uppercase tracking-[0.2em] px-4 transition-colors"
+                      style={{
+                        background: '#1C1917',
+                        color: '#FAF6F0',
+                        minHeight: '40px',
+                        opacity: couponLoading || !couponInput.trim() ? 0.5 : 1,
+                        cursor: couponLoading || !couponInput.trim() ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {couponLoading ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                  {couponError && (
+                    <p className="font-mono text-[0.42rem] uppercase tracking-[0.15em] text-sienna mt-1.5">
+                      {couponError}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Total row — shows breakdown when coupon applied */}
+            {appliedCoupon ? (
+              <>
+                <div className="flex justify-between items-center px-4 py-2" style={{ borderTop: '1px solid #D9CFC4', background: '#FAF6F0' }}>
+                  <span className="font-mono text-[0.45rem] uppercase tracking-[0.2em] text-taupe">Subtotal</span>
+                  <span className="font-mono text-sm text-taupe">{itemsSubtotal.toLocaleString()} EGP</span>
+                </div>
+                <div className="flex justify-between items-center px-4 py-2" style={{ background: '#FAF6F0' }}>
+                  <span className="font-mono text-[0.45rem] uppercase tracking-[0.2em] text-sienna">Discount</span>
+                  <span className="font-mono text-sm text-sienna">−{discountAmount.toLocaleString()} EGP</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-ivory" style={{ borderTop: '1px solid #D9CFC4' }}>
+                  <span className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-taupe">Total</span>
+                  <span className="font-mono text-base text-ink">{finalTotal.toLocaleString()} EGP</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between items-center p-4 bg-ivory" style={{ borderTop: '1px solid #D9CFC4' }}>
+                <span className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-taupe">Total</span>
+                <span className="font-mono text-base text-ink">{itemsSubtotal.toLocaleString()} EGP</span>
+              </div>
+            )}
           </div>
         </div>
 

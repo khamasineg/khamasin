@@ -68,7 +68,7 @@ const CSS = `
   /* ── Sticky controls ── */
   .op-sticky {
     position: sticky;
-    top: 0;
+    top: 48px;
     z-index: 40;
     background: #1C1917;
     padding: 2rem 2.5rem 0;
@@ -361,10 +361,6 @@ export default function OrdersPage() {
     setBusy(null)
   }
 
-  async function logout() {
-    await fetch('/api/admin/logout', { method: 'POST' })
-    router.push('/admin/login')
-  }
 
   // ── Derived state ─────────────────────────────────────────────────────────
 
@@ -417,7 +413,6 @@ export default function OrdersPage() {
               <button className="op-refresh" onClick={() => { fetchOrders(); setHasNew(false) }}>
                 ↻ Refresh
               </button>
-              <button className="op-logout" onClick={logout}>Sign Out →</button>
             </div>
           </div>
 

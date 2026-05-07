@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { syncProductsFromOrders } from '@/lib/sync-products'
 
 function verifySession(req: NextRequest): boolean {
   const session = req.cookies.get('fynde-admin-session')?.value
@@ -46,6 +47,9 @@ export async function PATCH(req: NextRequest) {
       .eq('id', orderId)
 
     if (error) throw error
+
+    // Keep product availability in sync after every status change
+    await syncProductsFromOrders()
 
     return NextResponse.json({ success: true })
   } catch (error) {

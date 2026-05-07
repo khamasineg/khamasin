@@ -12,6 +12,8 @@ export async function sendOrderConfirmationEmail({
   paymentMethod,
   address,
   city,
+  couponCode,
+  discountAmount,
 }: {
   customerEmail: string
   customerName: string
@@ -21,9 +23,13 @@ export async function sendOrderConfirmationEmail({
   paymentMethod: string
   address: string
   city: string
+  couponCode?: string
+  discountAmount?: number
 }) {
   const firstName = escapeHtml(customerName.split(' ')[0] || 'Customer')
   const orderRef = orderNumber ? `#${orderNumber}` : ''
+  const hasDiscount = couponCode && discountAmount && discountAmount > 0
+  const subtotal = hasDiscount ? total + discountAmount : total
   const safeAddress = escapeHtml(address)
   const safeCity = escapeHtml(city)
 
@@ -124,6 +130,32 @@ export async function sendOrderConfirmationEmail({
               <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #A8401A; margin: 0 0 20px;">&#8212; Your Order</p>
               <table width="100%" cellpadding="0" cellspacing="0">
                 ${itemRows}
+                ${hasDiscount ? `
+                <tr>
+                  <td style="padding: 20px 0 0;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0;">Subtotal</p>
+                  </td>
+                  <td style="padding: 20px 0 0; text-align: right;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 13px; color: #BEB0A0; margin: 0;">${subtotal.toLocaleString()} EGP</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 0 0;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #A8401A; margin: 0;">Coupon (${escapeHtml(couponCode!)})</p>
+                  </td>
+                  <td style="padding: 6px 0 0; text-align: right;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 13px; color: #A8401A; margin: 0;">−${discountAmount!.toLocaleString()} EGP</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0 0; border-top: 1px solid #D9CFC4;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0;">Total</p>
+                  </td>
+                  <td style="padding: 10px 0 0; text-align: right; border-top: 1px solid #D9CFC4;">
+                    <p style="font-family: 'Courier New', monospace; font-size: 18px; color: #1C1917; margin: 0;">${total.toLocaleString()} EGP</p>
+                  </td>
+                </tr>
+                ` : `
                 <tr>
                   <td style="padding: 20px 0 0;">
                     <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #BEB0A0; margin: 0;">Total</p>
@@ -132,6 +164,7 @@ export async function sendOrderConfirmationEmail({
                     <p style="font-family: 'Courier New', monospace; font-size: 18px; color: #1C1917; margin: 0;">${total.toLocaleString()} EGP</p>
                   </td>
                 </tr>
+                `}
               </table>
             </td>
           </tr>
@@ -194,7 +227,7 @@ export async function sendOrderConfirmationEmail({
                   </td>
                   <td align="right">
                     <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(190,176,160,0.4); margin: 0;">
-                      fyndethevintage@gmail.com
+                      orders@fyndethevintage.com
                     </p>
                   </td>
                 </tr>
@@ -214,6 +247,8 @@ export async function sendOrderConfirmationEmail({
   return resend.emails.send({
     from: 'FYNDE <orders@fyndethevintage.com>',
     to: customerEmail,
+    // Replies go to Gmail where the inbox is actually monitored
+    replyTo: 'fyndethevintage@gmail.com',
     subject: `✦ Your FYNDE order is confirmed${orderRef ? ` (${orderRef})` : ''}, ${firstName}.`,
     html,
   })

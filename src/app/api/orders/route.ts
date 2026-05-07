@@ -45,6 +45,11 @@ export async function POST(req: NextRequest) {
     }
     const { name, phone, email, address, city, notes, paymentMethod, items, total } = validation.data
 
+    // Extract coupon code from raw body (optional, not part of core validation)
+    const rawCouponCode = typeof rawBody === 'object' && rawBody !== null
+      ? String((rawBody as Record<string, unknown>).couponCode ?? '').trim().toUpperCase()
+      : ''
+
     const productIds = Array.from(new Set(items.map((item) => item.product.id)))
     const { data: products, error: productsError } = await supabaseAdmin
       .from('products')
@@ -61,13 +66,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'One or more products are already sold' }, { status: 409, headers: corsHeaders(origin) })
     }
 
-    const recalculatedTotal = items.reduce((sum, item) => {
+    const itemsSubtotal = items.reduce((sum, item) => {
       const serverProduct = productById.get(item.product.id)
       if (!serverProduct) return sum
       return sum + serverProduct.price * item.quantity
     }, 0)
 
-    if (recalculatedTotal !== total) {
+    // Server-side coupon validation
+    let appliedCouponCode: string | null = null
+    let discountAmount = 0
+
+    if (rawCouponCode) {
+      const { data: coupon } = await supabaseAdmin
+        .from('coupons')
+        .select('*')
+        .eq('code', rawCouponCode)
+        .single()
+
+      const isValid =
+        coupon &&
+        coupon.active &&
+        (!coupon.expires_at || new Date(coupon.expires_at) >= new Date()) &&
+        (coupon.max_uses === null || coupon.usage_count < coupon.max_uses)
+
+      if (isValid) {
+        discountAmount = coupon.type === 'percentage'
+          ? Math.round((itemsSubtotal * coupon.value) / 100)
+          : Math.min(coupon.value, itemsSubtotal)
+        appliedCouponCode = coupon.code
+      }
+    }
+
+    const expectedTotal = itemsSubtotal - discountAmount
+    if (expectedTotal !== total) {
       return NextResponse.json({ success: false, error: 'Order total mismatch' }, { status: 400, headers: corsHeaders(origin) })
     }
 
@@ -85,12 +116,32 @@ export async function POST(req: NextRequest) {
         payment_confirmed: paymentMethod === 'cod' ? true : false,
         items,
         total,
+        coupon_code: appliedCouponCode,
+        discount_amount: discountAmount > 0 ? discountAmount : 0,
         status: paymentMethod === 'cod' ? 'confirmed' : 'pending',
       })
       .select()
       .single()
 
     if (orderError) throw orderError
+
+    // Increment coupon usage_count (fire-and-forget; non-critical)
+    if (appliedCouponCode) {
+      supabaseAdmin
+        .from('coupons')
+        .select('usage_count')
+        .eq('code', appliedCouponCode)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            supabaseAdmin
+              .from('coupons')
+              .update({ usage_count: (data.usage_count ?? 0) + 1 })
+              .eq('code', appliedCouponCode!)
+              .then(() => null)
+          }
+        })
+    }
 
     // Mark products as sold for COD orders
     if (paymentMethod === 'cod') {
@@ -99,22 +150,24 @@ export async function POST(req: NextRequest) {
         .update({ sold: true })
         .in('id', productIds)
 
-     // Send confirmation email for COD
-const emailResult = await sendOrderConfirmationEmail({
-    customerEmail: email,
-    customerName: name,
-    orderNumber: order.order_number ?? undefined,
-    items: items.map((item: { product: { name: string; price: number }; size: string }) => ({
-      name: item.product.name,
-      size: item.size,
-      price: item.product.price,
-    })),
-    total,
-    paymentMethod,
-    address,
-    city,
-  })
-  
+      // Send confirmation email for COD
+      const emailResult = await sendOrderConfirmationEmail({
+        customerEmail: email,
+        customerName: name,
+        orderNumber: order.order_number ?? undefined,
+        items: items.map((item: { product: { name: string; price: number }; size: string }) => ({
+          name: item.product.name,
+          size: item.size,
+          price: item.product.price,
+        })),
+        total,
+        paymentMethod,
+        address,
+        city,
+        couponCode: appliedCouponCode ?? undefined,
+        discountAmount: discountAmount > 0 ? discountAmount : undefined,
+      })
+
       if (!emailResult?.data?.id) {
         console.error('Failed to queue COD confirmation email for order:', order.id)
       }

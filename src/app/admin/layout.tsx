@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import AdminNav from './components/AdminNav'
 
 export const metadata: Metadata = {
   title: 'Admin — FYNDE',
@@ -16,7 +17,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         overflowY: 'auto',
       }}
     >
-      {children}
+      {/* 48px top nav — always on top */}
+      <AdminNav />
+
+      {/* Page content pushed below nav */}
+      <div style={{ paddingTop: '48px', minHeight: '100%' }}>
+        {children}
+      </div>
     </div>
   )
 }
