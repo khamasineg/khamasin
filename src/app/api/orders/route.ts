@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sendOrderConfirmationEmail } from '@/lib/resend'
+import { sendAdminOrderNotification, sendOrderConfirmationEmail } from '@/lib/resend'
+import { buildOrderNotificationMessage, sendTelegramNotification } from '@/lib/telegram'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import {
   createOrderViewToken,
@@ -172,6 +173,45 @@ export async function POST(req: NextRequest) {
         console.error('Failed to queue COD confirmation email for order:', order.id)
       }
     }
+
+    // ── Admin notifications (fire-and-forget — never blocks user response) ──
+    const orderRef = order.order_number ? `#${order.order_number}` : `#${order.id.slice(0, 8).toUpperCase()}`
+    const notifItems = items.map((item: { product: { name: string; price: number }; size: string }) => ({
+      name: item.product.name,
+      size: item.size,
+      price: item.product.price,
+    }))
+
+    // Email to admin Gmail
+    sendAdminOrderNotification({
+      orderRef,
+      customerName: name,
+      customerEmail: email,
+      phone,
+      address,
+      city,
+      paymentMethod,
+      items: notifItems,
+      total,
+      couponCode: appliedCouponCode,
+      discountAmount: discountAmount > 0 ? discountAmount : null,
+      notes: notes || null,
+    })
+
+    // Telegram push (only fires if TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID are set)
+    sendTelegramNotification(
+      buildOrderNotificationMessage({
+        orderRef,
+        customerName: name,
+        phone,
+        city,
+        paymentMethod,
+        items: notifItems,
+        total,
+        couponCode: appliedCouponCode,
+        discountAmount: discountAmount > 0 ? discountAmount : null,
+      })
+    )
 
     const token = createOrderViewToken(order.id)
     return NextResponse.json({ success: true, order: { id: order.id }, token }, { headers: corsHeaders(origin) })

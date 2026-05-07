@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import InstapayIcon from '@/components/icons/InstapayIcon'
 
 type OrderItem = {
   product: { id: string; name: string; price: number; images?: string[] }
@@ -525,7 +526,7 @@ export default function OrdersPage() {
                         </td>
                         <td>
                           <span className={`c-tag${order.payment_method === 'instapay' ? ' ip' : ''}`}>
-                            {order.payment_method === 'cod' ? 'COD' : 'InstaPay'}
+                            {order.payment_method === 'cod' ? 'COD' : <span style={{display:'inline-flex',alignItems:'center',gap:'4px'}}><InstapayIcon size={13} /> IP</span>}
                           </span>
                         </td>
                         <td>
@@ -596,7 +597,7 @@ export default function OrdersPage() {
                   <span className="c-dot" style={{ background: st.dot }} />
                   {st.label}
                   {o.payment_method === 'instapay' && (
-                    <span style={{ opacity: .65 }}>· InstaPay</span>
+                    <span style={{ opacity: .85, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>· <InstapayIcon size={12} /></span>
                   )}
                 </span>
               </div>
@@ -658,8 +659,8 @@ export default function OrdersPage() {
                     </div>
                   ))}
                   <div className="pi-total">
-                    <span className="pi-total-lbl">
-                      {o.payment_method === 'cod' ? 'Cash on Delivery' : 'InstaPay'}
+                    <span className="pi-total-lbl" style={{display:'inline-flex',alignItems:'center',gap:'6px'}}>
+                      {o.payment_method === 'cod' ? 'Cash on Delivery' : <><InstapayIcon size={15} /> InstaPay</>}
                     </span>
                     <span className="pi-total-val">EGP {Number(o.total).toLocaleString()}</span>
                   </div>
@@ -722,7 +723,7 @@ export default function OrdersPage() {
                     disabled={busy === o.id}
                     onClick={() => { setConfirmError(null); setModal({ orderId: o.id, type: 'confirm' }) }}
                   >
-                    {busy === o.id ? 'Confirming...' : 'Confirm InstaPay Payment ✦'}
+                    {busy === o.id ? 'Confirming...' : <span style={{display:'inline-flex',alignItems:'center',gap:'6px'}}><InstapayIcon size={14} /> Confirm Payment ✦</span>}
                   </button>
                 )}
 
