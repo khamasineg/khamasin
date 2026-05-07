@@ -103,7 +103,7 @@ export default function RootLayout({
         <Ticker />
         <Nav />
         <CartDrawer />
-        <div className="pt-[88px] md:pt-0">
+        <div>
           <PageTransition>
             {children}
           </PageTransition>

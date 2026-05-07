@@ -10,6 +10,7 @@ export default function PageTransition({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const isAdmin = pathname.startsWith('/admin')
   const [isMobile, setIsMobile] = useState(false)
   const [displayChildren, setDisplayChildren] = useState(children)
   const [transitionStage, setTransitionStage] = useState<'idle' | 'covering' | 'revealing'>('idle')
@@ -19,7 +20,7 @@ export default function PageTransition({
   }, [])
 
   useEffect(() => {
-    if (isMobile) {
+    if (isMobile || isAdmin) {
       setDisplayChildren(children)
       return
     }
@@ -42,20 +43,9 @@ export default function PageTransition({
     }
   }, [transitionStage, children])
 
-  if (isMobile) {
-    return (
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
-    )
+  // Admin routes and mobile: no animation, instant swap
+  if (isMobile || isAdmin) {
+    return <>{children}</>
   }
 
   return (

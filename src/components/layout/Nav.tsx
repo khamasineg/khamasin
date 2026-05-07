@@ -106,10 +106,10 @@ export default function Nav() {
         </nav>
       )}
 
-      {/* ─── Mobile Top Bar ───────────────────────────────────────────────── */}
+      {/* ─── Mobile Top Bar — static (scrolls with page, not fixed) ─────── */}
       {isMobile && (
         <header
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-parchment border-b border-taupe-light"
+          className="relative z-50 flex items-center justify-between bg-parchment border-b border-taupe-light"
           style={{ paddingLeft: '1.25rem', paddingRight: '1.25rem', paddingTop: 'max(0.9rem, env(safe-area-inset-top))', paddingBottom: '0.9rem' }}
         >
           {/* Hamburger */}

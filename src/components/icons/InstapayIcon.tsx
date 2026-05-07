@@ -1,6 +1,6 @@
 /**
- * InstaPay Egypt icon — clean SVG that matches the official brand language.
- * The real mark: blue gradient badge + white lightning bolt + "instapay" wordmark.
+ * InstaPay icon — uses the official instapay logo image from /public/images.
+ * Falls back to a clean SVG badge if the image fails to load.
  */
 export default function InstapayIcon({
   size = 20,
@@ -17,7 +17,23 @@ export default function InstapayIcon({
       style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}
       aria-label="InstaPay"
     >
-      {/* Badge */}
+      {/* Official InstaPay logo image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/images/instapay-logo.png"
+        alt="InstaPay"
+        width={size}
+        height={size}
+        style={{ display: 'block', objectFit: 'contain', flexShrink: 0 }}
+        onError={(e) => {
+          // Fallback SVG if image missing
+          const target = e.currentTarget
+          target.style.display = 'none'
+          const svg = target.nextElementSibling as HTMLElement | null
+          if (svg) svg.style.display = 'block'
+        }}
+      />
+      {/* Fallback SVG (hidden by default) */}
       <svg
         width={size}
         height={size}
@@ -25,6 +41,7 @@ export default function InstapayIcon({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
+        style={{ display: 'none', flexShrink: 0 }}
       >
         <defs>
           <linearGradient id="ip-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
@@ -32,14 +49,8 @@ export default function InstapayIcon({
             <stop offset="100%" stopColor="#003D8F" />
           </linearGradient>
         </defs>
-        {/* Rounded badge */}
         <rect width="32" height="32" rx="8" fill="url(#ip-grad)" />
-        {/* Lightning bolt — the universal "instant" symbol */}
-        <path
-          d="M18.5 4L10 18h7l-3.5 10L26 14h-7.5L18.5 4z"
-          fill="white"
-          fillOpacity="0.95"
-        />
+        <path d="M18.5 4L10 18h7l-3.5 10L26 14h-7.5L18.5 4z" fill="white" fillOpacity="0.95" />
       </svg>
 
       {showLabel && (
@@ -50,7 +61,6 @@ export default function InstapayIcon({
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
             color: 'currentColor',
-            fontWeight: 500,
           }}
         >
           InstaPay
