@@ -2,6 +2,21 @@ import { supabase } from '@/lib/supabase'
 import ProductDetail from '@/components/shop/ProductDetail'
 import { notFound } from 'next/navigation'
 
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const { data: product } = await supabase
+    .from('products')
+    .select('name, era, brand, condition, price')
+    .eq('slug', params.slug)
+    .single()
+
+  if (!product) return {}
+
+  return {
+    title: `${product.name} — FYNDE`,
+    description: `${product.era} · ${product.brand} · ${product.condition} — ${product.price.toLocaleString()} EGP. One of one vintage piece, available now at FYNDE.`,
+  }
+}
+
 export default async function ProductPage({
   params,
 }: {

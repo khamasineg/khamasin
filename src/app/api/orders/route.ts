@@ -13,7 +13,7 @@ function corsHeaders(origin: string | null) {
   return {
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Origin': origin ?? '*',
+    'Access-Control-Allow-Origin': origin ?? process.env.NEXT_PUBLIC_SITE_URL ?? '',
     Vary: 'Origin',
   }
 }
@@ -115,14 +115,14 @@ const emailResult = await sendOrderConfirmationEmail({
   })
   
       if (!emailResult?.data?.id) {
-        console.error('Failed to queue COD confirmation email')
+        console.error('Failed to queue COD confirmation email for order:', order.id)
       }
     }
 
     const token = createOrderViewToken(order.id)
     return NextResponse.json({ success: true, order: { id: order.id }, token }, { headers: corsHeaders(origin) })
   } catch (error) {
-    console.error('Order route failure')
+    console.error('Order route failure:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500, headers: corsHeaders(origin) })
   }
 }
