@@ -6,6 +6,7 @@ export const resend = new Resend(process.env.RESEND_API_KEY)
 export async function sendOrderConfirmationEmail({
   customerEmail,
   customerName,
+  orderNumber,
   items,
   total,
   paymentMethod,
@@ -14,6 +15,7 @@ export async function sendOrderConfirmationEmail({
 }: {
   customerEmail: string
   customerName: string
+  orderNumber?: number
   items: { name: string; size: string; price: number; image?: string }[]
   total: number
   paymentMethod: string
@@ -21,6 +23,7 @@ export async function sendOrderConfirmationEmail({
   city: string
 }) {
   const firstName = escapeHtml(customerName.split(' ')[0] || 'Customer')
+  const orderRef = orderNumber ? `#${orderNumber}` : ''
   const safeAddress = escapeHtml(address)
   const safeCity = escapeHtml(city)
 
@@ -81,6 +84,7 @@ export async function sendOrderConfirmationEmail({
                   </td>
                   <td align="right" style="vertical-align: bottom;">
                     <p style="font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #A8401A; margin: 0;">&#10022; Order Confirmed</p>
+                    ${orderRef ? `<p style="font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.15em; color: #F0E9DF; margin: 6px 0 0;">Ref ${orderRef}</p>` : ''}
                   </td>
                 </tr>
               </table>
@@ -210,7 +214,7 @@ export async function sendOrderConfirmationEmail({
   return resend.emails.send({
     from: 'FYNDE <orders@fyndethevintage.com>',
     to: customerEmail,
-    subject: `&#10022; Your FYNDE order is confirmed, ${firstName}.`,
+    subject: `✦ Your FYNDE order is confirmed${orderRef ? ` (${orderRef})` : ''}, ${firstName}.`,
     html,
   })
 }

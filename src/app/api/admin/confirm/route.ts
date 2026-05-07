@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
     const emailResult = await sendOrderConfirmationEmail({
       customerEmail: order.customer_email,
       customerName: order.name,
+      orderNumber: order.order_number ?? undefined,
       items: order.items.map(
         (item: { product: { name: string; price: number; images?: string[] }; size: string }) => ({
           name: item.product.name,

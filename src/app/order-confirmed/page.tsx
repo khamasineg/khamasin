@@ -6,6 +6,7 @@ import Link from 'next/link'
 
 type Order = {
   id: string
+  order_number: number | null
   name: string
   customer_email: string
   items: {
@@ -111,7 +112,7 @@ function OrderConfirmedContent() {
               Order Reference
             </p>
             <p className="font-mono text-[0.45rem] uppercase tracking-[0.15em] text-ink">
-              #{order.id.slice(0, 8).toUpperCase()}
+              {order.order_number ? `#${order.order_number}` : `#${order.id.slice(0, 8).toUpperCase()}`}
             </p>
           </div>
 

@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
 const emailResult = await sendOrderConfirmationEmail({
     customerEmail: email,
     customerName: name,
+    orderNumber: order.order_number ?? undefined,
     items: items.map((item: { product: { name: string; price: number }; size: string }) => ({
       name: item.product.name,
       size: item.size,
@@ -141,7 +142,7 @@ export async function GET(req: NextRequest) {
 
   const { data: order, error } = await supabaseAdmin
     .from('orders')
-    .select('id, name, customer_email, items, total, payment_method, status, created_at')
+    .select('id, order_number, name, customer_email, items, total, payment_method, status, created_at')
     .eq('id', orderId)
     .single()
 

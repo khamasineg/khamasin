@@ -53,3 +53,29 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Update failed' }, { status: 500 })
   }
 }
+
+// DELETE — permanently remove an order record
+export async function DELETE(req: NextRequest) {
+  if (!verifySession(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const orderId = req.nextUrl.searchParams.get('id')
+    if (!orderId) {
+      return NextResponse.json({ error: 'orderId is required' }, { status: 400 })
+    }
+
+    const { error } = await supabaseAdmin
+      .from('orders')
+      .delete()
+      .eq('id', orderId)
+
+    if (error) throw error
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Admin order delete failed:', error)
+    return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
+  }
+}
