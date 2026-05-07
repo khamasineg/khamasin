@@ -55,7 +55,18 @@ function copyText(t: string) { navigator.clipboard.writeText(t).catch(() => {}) 
 function waLink(phone: string, ref: string, name: string) {
   const d = phone.replace(/\D/g, '')
   const intl = d.startsWith('0') ? '2' + d : d.startsWith('20') ? d : '20' + d
-  return `https://wa.me/${intl}?text=${encodeURIComponent(`Hello ${name}, regarding your FYNDE order ${ref}.`)}`
+  return `https://wa.me/${intl}?text=${encodeURIComponent(`Hello ${name}, regarding your FYNDE order ${ref}.
+To proceed with your order, please complete the payment via Instapay using any of the details below:
+1- Mobile Number
+ Number: 01050545699
+ Name: Hosni Elshazly
+
+2- Instapay Username
+Username: hosni99@instapay.com
+
+Kindly send a screenshot once the transfer is completed, and your order will be processed right away
+
+`)}`
 }
 
 const CSS = `
