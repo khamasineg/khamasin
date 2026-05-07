@@ -1,14 +1,17 @@
 'use client'
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 
 type OrderItem = {
-  id: string
-  name: string
-  price: number
-  size?: string
-  image?: string
+  product: {
+    id: string
+    name: string
+    price: number
+    images?: string[]
+  }
+  size: string
+  quantity: number
 }
 
 type Order = {
@@ -21,130 +24,157 @@ type Order = {
   notes: string
   items: OrderItem[]
   total: number
-  payment_id: string
   payment_method: 'cod' | 'instapay'
   payment_confirmed: boolean
-  payment_status: 'pending' | 'confirmed'
-  order_status: 'new' | 'processing' | 'delivered' | 'cancelled'
+  status: 'pending' | 'confirmed' | 'delivered' | 'cancelled'
   created_at: string
 }
 
-const ORDER_STATUSES  = ['new', 'processing', 'delivered', 'cancelled'] as const
-const PAYMENT_STATUSES = ['pending', 'confirmed'] as const
+const STATUS: Record<string, { bg: string; color: string; label: string; dot: string }> = {
+  pending:   { bg: 'rgba(200,160,40,.18)',  color: '#D4A017', label: 'Pending Payment', dot: '#D4A017' },
+  confirmed: { bg: 'rgba(168,64,26,.2)',    color: '#C4521F', label: 'Confirmed',        dot: '#C4521F' },
+  delivered: { bg: 'rgba(45,120,22,.22)',   color: '#5DBF3A', label: 'Delivered',        dot: '#5DBF3A' },
+  cancelled: { bg: 'rgba(138,129,120,.15)', color: '#8A8178', label: 'Cancelled',        dot: '#8A8178' },
+}
+
 const PAGE_SIZE = 15
 
-const OS: Record<string, { bg: string; color: string; label: string; dot: string }> = {
-  new:        { bg:'rgba(168,64,26,.15)',  color:'#C4521F', label:'New',        dot:'#C4521F' },
-  processing: { bg:'rgba(240,233,223,.08)',color:'#F0E9DF', label:'Processing', dot:'#F0E9DF' },
-  delivered:  { bg:'rgba(45,80,22,.25)',   color:'#6DBF4A', label:'Delivered',  dot:'#6DBF4A' },
-  cancelled:  { bg:'rgba(138,129,120,.15)',color:'#8A8178', label:'Cancelled',  dot:'#8A8178' },
-}
-const PS: Record<string, { bg: string; color: string; label: string }> = {
-  pending:   { bg:'rgba(138,129,120,.12)', color:'#8A8178', label:'Pending'   },
-  confirmed: { bg:'rgba(168,64,26,.2)',    color:'#C4521F', label:'Confirmed' },
-}
-
-function fmt(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
-}
-function fmtT(iso: string) {
-  return new Date(iso).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })
-}
-function copyText(t: string) {
-  navigator.clipboard.writeText(t).catch(() => {})
-}
+function fmt(iso: string)  { return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) }
+function fmtT(iso: string) { return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) }
+function copyText(t: string) { navigator.clipboard.writeText(t).catch(() => {}) }
 
 export default function OrdersPage() {
+  const router = useRouter()
   const [orders,   setOrders]   = useState<Order[]>([])
   const [loading,  setLoading]  = useState(true)
   const [search,   setSearch]   = useState('')
-  const [oFilter,  setOFilter]  = useState<'all' | Order['order_status']>('all')
-  const [pFilter,  setPFilter]  = useState<'all' | Order['payment_status']>('all')
-  const [mFilter,  setMFilter]  = useState<'all'|'cod'|'instapay'>('all')
+  const [sFilter,  setSFilter]  = useState<'all' | Order['status']>('all')
+  const [mFilter,  setMFilter]  = useState<'all' | 'cod' | 'instapay'>('all')
   const [page,     setPage]     = useState(1)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [busy,     setBusy]     = useState<string | null>(null)
-  const [toast,    setToast]    = useState<{ msg: string; type: 'ok'|'err' } | null>(null)
-  const [modal,    setModal]    = useState<{ orderId: string; type: 'order_status'|'payment_status'|'delete' } | null>(null)
+  const [toast,    setToast]    = useState<{ msg: string; type: 'ok' | 'err' } | null>(null)
+  const [modal,    setModal]    = useState<{ orderId: string; type: 'status' | 'confirm' | 'delete' } | null>(null)
+  const [confirmError, setConfirmError] = useState<string | null>(null)
 
-  const showToast = useCallback((msg: string, type: 'ok'|'err' = 'ok') => {
+  const showToast = useCallback((msg: string, type: 'ok' | 'err' = 'ok') => {
     setToast({ msg, type })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 3500)
   }, [])
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
-    if (!error && data) setOrders(data as Order[])
-    else if (error) showToast('Failed to load orders', 'err')
+    try {
+      const res = await fetch('/api/admin/orders')
+      if (res.status === 401) { router.push('/admin/login'); return }
+      const data = await res.json()
+      if (data.orders) setOrders(data.orders)
+      else showToast('Failed to load orders', 'err')
+    } catch {
+      showToast('Failed to load orders', 'err')
+    }
     setLoading(false)
-  }, [showToast])
+  }, [router, showToast])
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
+  useEffect(() => { setPage(1) }, [search, sFilter, mFilter])
 
-  // Reset page on filter change
-  useEffect(() => { setPage(1) }, [search, oFilter, pFilter, mFilter])
-
-  async function updateOrderStatus(orderId: string, value: string) {
+  async function updateStatus(orderId: string, status: string) {
     setBusy(orderId)
-    const { error } = await supabase.from('orders').update({ order_status: value }).eq('id', orderId)
-    if (error) { showToast('Update failed', 'err'); setBusy(null); return }
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, order_status: value as Order['order_status'] } : o))
-    showToast(`Order marked as ${value}`)
+    try {
+      const res = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, status }),
+      })
+      if (!res.ok) throw new Error('Update failed')
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: status as Order['status'] } : o))
+      showToast(`Order marked as ${status}`)
+      setModal(null)
+    } catch {
+      showToast('Update failed', 'err')
+    }
     setBusy(null)
-    setModal(null)
   }
 
-  async function updatePaymentStatus(orderId: string, value: string) {
+  async function confirmInstapay(orderId: string) {
     setBusy(orderId)
-    const updates: Record<string, unknown> = { payment_status: value }
-    if (value === 'confirmed') {
-      updates.payment_confirmed = true
-      const order = orders.find(o => o.id === orderId)
-      if (order) {
-        const ids = (order.items || []).map(i => i.id).filter(Boolean)
-        if (ids.length) await supabase.from('products').update({ sold: true }).in('id', ids)
+    setConfirmError(null)
+    try {
+      const res = await fetch('/api/admin/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        const msg = data.soldItems?.length
+          ? `Already sold: ${data.soldItems.join(', ')}`
+          : data.error ?? 'Confirmation failed'
+        setConfirmError(msg)
+        setBusy(null)
+        return
       }
+      setOrders(prev => prev.map(o =>
+        o.id === orderId ? { ...o, status: 'confirmed', payment_confirmed: true } : o
+      ))
+      showToast('Payment confirmed — customer notified ✦')
+      setModal(null)
+    } catch {
+      setConfirmError('Something went wrong. Please try again.')
     }
-    const { error } = await supabase.from('orders').update(updates).eq('id', orderId)
-    if (error) { showToast('Update failed', 'err'); setBusy(null); return }
-    setOrders(prev => prev.map(o =>
-      o.id === orderId ? { ...o, payment_status: value as Order['payment_status'], payment_confirmed: value === 'confirmed' } : o
-    ))
-    showToast(`Payment marked as ${value}`)
     setBusy(null)
-    setModal(null)
   }
 
   async function deleteOrder(orderId: string) {
     setBusy(orderId)
-    const { error } = await supabase.from('orders').delete().eq('id', orderId)
-    if (error) { showToast('Delete failed', 'err'); setBusy(null); return }
-    setOrders(prev => prev.filter(o => o.id !== orderId))
-    setModal(null)
-    setExpanded(null)
-    showToast('Order deleted')
+    try {
+      const { createClient } = await import('@supabase/supabase-js')
+      // Use admin API - delete via orders PATCH is not ideal but for now call direct
+      // We'll fetch and delete directly (the session is checked by middleware)
+      const res = await fetch(`/api/admin/orders?id=${orderId}`, { method: 'DELETE' })
+      // If DELETE isn't implemented, we fall through
+      if (res.status === 405) {
+        // Method not allowed — show message
+        showToast('Delete not available — remove from Supabase directly', 'err')
+        setModal(null)
+        setBusy(null)
+        return
+      }
+      if (!res.ok) throw new Error('Delete failed')
+      setOrders(prev => prev.filter(o => o.id !== orderId))
+      setModal(null)
+      setExpanded(null)
+      showToast('Order deleted')
+    } catch {
+      showToast('Delete failed', 'err')
+    }
     setBusy(null)
   }
 
-  const filtered = useMemo(() => {
-    return orders.filter(o => {
-      const q = search.toLowerCase().trim()
-      const matchS = !q || [o.name, o.customer_email, o.phone, o.city, o.address, o.id.slice(0,8)]
-        .some(f => f?.toLowerCase().includes(q))
-      return matchS
-        && (oFilter === 'all' || o.order_status   === oFilter)
-        && (pFilter === 'all' || o.payment_status === pFilter)
-        && (mFilter === 'all' || o.payment_method  === mFilter)
-    })
-  }, [orders, search, oFilter, pFilter, mFilter])
+  async function logout() {
+    await fetch('/api/admin/logout', { method: 'POST' })
+    router.push('/admin/login')
+  }
+
+  const filtered = useMemo(() => orders.filter(o => {
+    const q = search.toLowerCase().trim()
+    const matchS = !q || [o.name, o.customer_email, o.phone, o.city, o.id.slice(0, 8)]
+      .some(f => f?.toLowerCase().includes(q))
+    return matchS
+      && (sFilter === 'all' || o.status === sFilter)
+      && (mFilter === 'all' || o.payment_method === mFilter)
+  }), [orders, search, sFilter, mFilter])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const counts = useMemo(() => ({
-    o: { all: orders.length, new: orders.filter(o=>o.order_status==='new').length, processing: orders.filter(o=>o.order_status==='processing').length, delivered: orders.filter(o=>o.order_status==='delivered').length, cancelled: orders.filter(o=>o.order_status==='cancelled').length },
-    p: { all: orders.length, pending: orders.filter(o=>o.payment_status==='pending').length, confirmed: orders.filter(o=>o.payment_status==='confirmed').length },
+    all:       orders.length,
+    pending:   orders.filter(o => o.status === 'pending').length,
+    confirmed: orders.filter(o => o.status === 'confirmed').length,
+    delivered: orders.filter(o => o.status === 'delivered').length,
+    cancelled: orders.filter(o => o.status === 'cancelled').length,
   }), [orders])
 
   const modalOrder = modal ? orders.find(o => o.id === modal.orderId) : null
@@ -155,22 +185,22 @@ export default function OrdersPage() {
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Bebas+Neue&family=Instrument+Mono&display=swap');
         *{box-sizing:border-box;}
 
-        /* ── Page ── */
-        .op{padding:2.5rem 2rem;max-width:1300px;color:#F0E9DF;}
+        .op{padding:2.5rem 2rem;max-width:1300px;margin:0 auto;color:#F0E9DF;}
+        .op-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.75rem;gap:1rem;flex-wrap:wrap;}
         .op-ey{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8A8178;margin:0 0 6px;}
-        .op-h1{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:3rem;color:#F0E9DF;margin:0 0 .5rem;line-height:1;}
+        .op-h1{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:3rem;color:#F0E9DF;margin:0;line-height:1;}
+        .op-logout{background:none;border:1px solid rgba(240,233,223,0.15);padding:8px 16px;font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#8A8178;cursor:pointer;transition:all .15s;align-self:flex-start;border-radius:0;}
+        .op-logout:hover{border-color:#F0E9DF;color:#F0E9DF;}
 
-        /* ── Top bar ── */
         .op-topbar{display:flex;align-items:center;gap:12px;margin-bottom:1.75rem;flex-wrap:wrap;}
         .op-search-wrap{position:relative;flex:1;min-width:240px;}
         .op-search{width:100%;background:#1A1917;border:1px solid #3A3734;padding:13px 16px 13px 44px;font-family:'Instrument Mono',monospace;font-size:12px;color:#F0E9DF;outline:none;border-radius:0;transition:border-color .15s;letter-spacing:.04em;}
         .op-search:focus{border-color:#A8401A;}
         .op-search::placeholder{color:#8A8178;}
         .op-si{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#8A8178;font-size:16px;pointer-events:none;}
-        .op-refresh{background:none;border:1px solid #3A3734;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8A8178;font-size:16px;transition:all .15s;flex-shrink:0;}
+        .op-refresh{background:none;border:1px solid #3A3734;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8A8178;font-size:16px;transition:all .15s;flex-shrink:0;border-radius:0;}
         .op-refresh:hover{border-color:#F0E9DF;color:#F0E9DF;}
 
-        /* ── Filters ── */
         .op-fg{margin-bottom:.875rem;}
         .op-fl{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:#3A3734;display:block;margin-bottom:7px;}
         .op-frow{display:flex;flex-wrap:wrap;gap:5px;}
@@ -180,12 +210,10 @@ export default function OrdersPage() {
         .op-fc{font-size:8px;padding:1px 5px;background:rgba(168,64,26,.2);color:#C4521F;border-radius:10px;}
         .op-fb.on .op-fc{background:rgba(255,255,255,.2);color:#FAF6F0;}
 
-        /* ── Divider + meta ── */
         .op-div{width:100%;height:1px;background:#3A3734;margin:1.25rem 0 1rem;}
         .op-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
         .op-count{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#8A8178;}
 
-        /* ── Table ── */
         .op-tbl{width:100%;border-collapse:collapse;}
         .op-tbl th{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:.26em;text-transform:uppercase;color:#8A8178;text-align:left;padding:0 12px 12px;border-bottom:1px solid #3A3734;white-space:nowrap;}
         .op-tbl td{padding:15px 12px;border-bottom:1px solid #242220;vertical-align:top;}
@@ -193,7 +221,6 @@ export default function OrdersPage() {
         .op-row:hover{background:rgba(240,233,223,.03);}
         .op-row.on{background:rgba(168,64,26,.06);}
 
-        /* Cell types */
         .c-id{font-family:'Instrument Mono',monospace;font-size:11px;letter-spacing:.1em;color:#A8401A;font-weight:600;}
         .c-name{font-family:'Instrument Mono',monospace;font-size:12px;color:#F0E9DF;margin-bottom:3px;}
         .c-sub{font-family:'Instrument Mono',monospace;font-size:10px;color:#8A8178;margin-top:2px;}
@@ -204,19 +231,19 @@ export default function OrdersPage() {
         .c-badge{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer;border:none;outline:none;transition:opacity .15s;border-radius:0;}
         .c-badge:hover{opacity:.8;}
         .c-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+        .c-confirm-btn{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:6px 12px;background:#A8401A;color:#FAF6F0;border:none;cursor:pointer;transition:background .15s;white-space:nowrap;border-radius:0;}
+        .c-confirm-btn:hover{background:#C4521F;}
+        .c-confirm-btn:disabled{opacity:.5;cursor:not-allowed;}
 
-        /* Copy btn */
         .cp-btn{background:none;border:none;cursor:pointer;color:#8A8178;font-size:10px;padding:2px 4px;transition:color .15s;vertical-align:middle;margin-left:4px;}
         .cp-btn:hover{color:#F0E9DF;}
 
-        /* ── Expand row ── */
         .exp-row td{padding:0;border-bottom:1px solid #3A3734;}
         .exp-inner{padding:1.5rem 2rem;background:#1A1917;border-top:1px solid #3A3734;display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
         .exp-lbl{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:#8A8178;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;}
         .exp-del-btn{background:none;border:1px solid rgba(200,50,50,.3);padding:4px 10px;font-family:'Instrument Mono',monospace;font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,80,80,.7);cursor:pointer;transition:all .15s;border-radius:0;}
         .exp-del-btn:hover{border-color:rgb(200,60,60);color:rgb(220,80,80);}
 
-        /* Items list */
         .it-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #242220;}
         .it-row:last-child{border-bottom:none;}
         .it-img{width:52px;height:66px;object-fit:cover;flex-shrink:0;background:#242220;}
@@ -225,18 +252,15 @@ export default function OrdersPage() {
         .it-sz{font-family:'Instrument Mono',monospace;font-size:9px;color:#8A8178;letter-spacing:.12em;text-transform:uppercase;}
         .it-price{font-family:'Instrument Mono',monospace;font-size:12px;color:#F0E9DF;margin-left:auto;white-space:nowrap;flex-shrink:0;}
 
-        /* Detail fields */
         .det-row{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-bottom:1px solid #242220;}
         .det-row:last-child{border-bottom:none;}
         .det-lbl{font-family:'Instrument Mono',monospace;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#8A8178;}
         .det-val{font-family:'Instrument Mono',monospace;font-size:11px;color:#F0E9DF;word-break:break-all;display:flex;align-items:center;gap:4px;}
 
-        /* Order total row */
         .exp-total{grid-column:1/-1;display:flex;justify-content:flex-end;padding-top:1rem;border-top:1px solid #3A3734;margin-top:.5rem;}
         .exp-total-label{font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#8A8178;margin-right:1.5rem;align-self:center;}
         .exp-total-val{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.6rem;color:#F0E9DF;font-weight:300;}
 
-        /* ── Pagination ── */
         .pag{display:flex;align-items:center;gap:6px;margin-top:2rem;justify-content:center;flex-wrap:wrap;}
         .pag-btn{background:none;border:1px solid #3A3734;width:36px;height:36px;font-family:'Instrument Mono',monospace;font-size:10px;color:#8A8178;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;border-radius:0;}
         .pag-btn:hover:not(:disabled){border-color:#F0E9DF;color:#F0E9DF;}
@@ -244,36 +268,34 @@ export default function OrdersPage() {
         .pag-btn:disabled{opacity:.3;cursor:not-allowed;}
         .pag-ellipsis{font-family:'Instrument Mono',monospace;font-size:10px;color:#8A8178;padding:0 4px;}
 
-        /* ── Empty / loading ── */
         .op-empty{text-align:center;padding:5rem 2rem;}
         .op-ei{width:44px;height:44px;border:1px solid #3A3734;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;color:#A8401A;font-size:16px;}
         .op-et{font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#8A8178;}
 
-        /* ── Toast ── */
-        .toast{position:fixed;bottom:2rem;right:2rem;z-index:500;padding:12px 20px;font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#FAF6F0;animation:tin .25s ease;border-left:3px solid;}
+        .toast{position:fixed;bottom:2rem;right:2rem;z-index:600;padding:12px 20px;font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#FAF6F0;animation:tin .25s ease;border-left:3px solid;}
         .toast.ok{background:#1A1917;border-color:#A8401A;}
         .toast.err{background:#1A1917;border-color:rgb(180,50,50);}
         @keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-        /* ── Modal ── */
-        .mo{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+        .mo{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:550;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
         .mo-card{background:#1A1917;border:1px solid #3A3734;padding:2.5rem;max-width:440px;width:100%;}
         .mo-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;font-size:1.6rem;color:#F0E9DF;margin:0 0 4px;line-height:1.2;}
         .mo-sub{font-family:'Instrument Mono',monospace;font-size:10px;line-height:1.8;color:#8A8178;margin:0 0 1.5rem;letter-spacing:.06em;}
         .mo-warn{font-family:'Instrument Mono',monospace;font-size:9px;color:#C4521F;letter-spacing:.08em;line-height:1.7;margin-bottom:1.25rem;padding:10px 12px;border:1px solid rgba(168,64,26,.25);background:rgba(168,64,26,.07);}
+        .mo-err{font-family:'Instrument Mono',monospace;font-size:9px;color:rgb(220,80,80);letter-spacing:.08em;line-height:1.7;margin-bottom:1.25rem;padding:10px 12px;border:1px solid rgba(180,50,50,.3);background:rgba(180,50,50,.08);}
         .mo-opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.5rem;}
         .mo-opt{background:none;border:1px solid #3A3734;padding:10px 18px;font-family:'Instrument Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#8A8178;cursor:pointer;transition:all .15s;border-radius:0;}
         .mo-opt:hover{border-color:#F0E9DF;color:#F0E9DF;}
-        .mo-opt.cur{border-color:#A8401A;color:#A8401A;background:rgba(168,64,26,.1);}
-        .mo-opt:disabled{opacity:.4;cursor:not-allowed;}
         .mo-acts{display:flex;gap:10px;}
         .mo-cancel{flex:1;background:none;color:#8A8178;border:1px solid #3A3734;padding:13px;font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:all .15s;border-radius:0;}
         .mo-cancel:hover{border-color:#F0E9DF;color:#F0E9DF;}
+        .mo-confirm-act{flex:1;background:#A8401A;color:#FAF6F0;border:none;padding:13px;font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:background .15s;border-radius:0;}
+        .mo-confirm-act:hover:not(:disabled){background:#C4521F;}
+        .mo-confirm-act:disabled{opacity:.5;cursor:not-allowed;}
         .mo-danger{flex:1;background:rgba(180,50,50,.15);color:rgb(220,80,80);border:1px solid rgba(180,50,50,.3);padding:13px;font-family:'Instrument Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;transition:all .15s;border-radius:0;}
         .mo-danger:hover{background:rgba(180,50,50,.25);}
         .mo-danger:disabled{opacity:.5;cursor:not-allowed;}
 
-        /* Mobile */
         @media(max-width:768px){
           .op{padding:1.5rem 1rem;}
           .op-h1{font-size:2.2rem;}
@@ -290,8 +312,13 @@ export default function OrdersPage() {
       <div className="op">
 
         {/* Header */}
-        <p className="op-ey">Admin Panel · Orders</p>
-        <h1 className="op-h1">All Orders.</h1>
+        <div className="op-header">
+          <div>
+            <p className="op-ey">FYNDE · Admin Panel</p>
+            <h1 className="op-h1">Orders.</h1>
+          </div>
+          <button className="op-logout" onClick={logout}>Sign Out →</button>
+        </div>
 
         {/* Search + refresh */}
         <div className="op-topbar">
@@ -303,35 +330,24 @@ export default function OrdersPage() {
           <button className="op-refresh" onClick={fetchOrders} title="Refresh orders">↻</button>
         </div>
 
-        {/* Filters */}
+        {/* Status filter */}
         <div className="op-fg">
-          <span className="op-fl">Order Status</span>
+          <span className="op-fl">Status</span>
           <div className="op-frow">
-            {(['all', ...ORDER_STATUSES] as const).map(s => (
-              <button key={s} className={`op-fb${oFilter === s ? ' on' : ''}`} onClick={() => setOFilter(s as typeof oFilter)}>
-                {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
-                <span className="op-fc">{s === 'all' ? counts.o.all : counts.o[s as keyof typeof counts.o]}</span>
+            {(['all', 'pending', 'confirmed', 'delivered', 'cancelled'] as const).map(s => (
+              <button key={s} className={`op-fb${sFilter === s ? ' on' : ''}`} onClick={() => setSFilter(s)}>
+                {s === 'all' ? 'All Orders' : STATUS[s]?.label ?? s}
+                <span className="op-fc">{counts[s]}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="op-fg">
-          <span className="op-fl">Payment Status</span>
-          <div className="op-frow">
-            {(['all', ...PAYMENT_STATUSES] as const).map(s => (
-              <button key={s} className={`op-fb${pFilter === s ? ' on' : ''}`} onClick={() => setPFilter(s as typeof pFilter)}>
-                {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
-                <span className="op-fc">{s === 'all' ? counts.p.all : counts.p[s as keyof typeof counts.p]}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
+        {/* Method filter */}
         <div className="op-fg">
           <span className="op-fl">Payment Method</span>
           <div className="op-frow">
-            {(['all', 'cod', 'instapay'] as const).map(m => (
+            {(['all', 'instapay', 'cod'] as const).map(m => (
               <button key={m} className={`op-fb${mFilter === m ? ' on' : ''}`} onClick={() => setMFilter(m)}>
                 {m === 'all' ? 'All Methods' : m.toUpperCase()}
               </button>
@@ -349,7 +365,7 @@ export default function OrdersPage() {
         ) : filtered.length === 0 ? (
           <div className="op-empty">
             <div className="op-ei">◫</div>
-            <p className="op-et">{search ? `No orders matching "${search}"` : 'No orders found'}</p>
+            <p className="op-et">{search ? `No orders matching "${search}"` : 'No orders yet'}</p>
           </div>
         ) : (
           <>
@@ -358,7 +374,7 @@ export default function OrdersPage() {
                 {filtered.length} order{filtered.length !== 1 ? 's' : ''}
                 {filtered.length !== orders.length ? ` · ${orders.length} total` : ''}
               </span>
-              <span className="op-count">Page {page} of {totalPages}</span>
+              {totalPages > 1 && <span className="op-count">Page {page} of {totalPages}</span>}
             </div>
 
             <table className="op-tbl">
@@ -370,21 +386,21 @@ export default function OrdersPage() {
                   <th>Items</th>
                   <th>Total</th>
                   <th>Method</th>
-                  <th>Order Status</th>
-                  <th>Payment</th>
+                  <th>Status</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {paginated.map(order => {
                   const isExp = expanded === order.id
-                  const os = OS[order.order_status] ?? OS.new
-                  const ps = PS[order.payment_status] ?? PS.pending
+                  const st    = STATUS[order.status] ?? STATUS.pending
+                  const isPendingInstapay = order.payment_method === 'instapay' && order.status === 'pending'
 
                   return (
                     <>
                       <tr key={order.id} className={`op-row${isExp ? ' on' : ''}`}
                         onClick={() => setExpanded(isExp ? null : order.id)}>
-                        <td><span className="c-id">#{order.id.slice(0,8).toUpperCase()}</span></td>
+                        <td><span className="c-id">#{order.id.slice(0, 8).toUpperCase()}</span></td>
                         <td>
                           <div className="c-name">{order.name || '—'}</div>
                           <div className="c-sub">{order.customer_email}</div>
@@ -398,17 +414,26 @@ export default function OrdersPage() {
                         <td><span className="c-total">EGP {Number(order.total).toLocaleString()}</span></td>
                         <td><span className="c-tag">{order.payment_method?.toUpperCase() || '—'}</span></td>
                         <td onClick={e => e.stopPropagation()}>
-                          <button className="c-badge" style={{ background: os.bg, color: os.color }}
-                            onClick={() => setModal({ orderId: order.id, type: 'order_status' })}>
-                            <span className="c-dot" style={{ background: os.dot }} />
-                            {os.label} ↓
+                          <button className="c-badge" style={{ background: st.bg, color: st.color }}
+                            onClick={() => {
+                              if (isPendingInstapay) return // handled by confirm button
+                              if (order.status === 'cancelled') return
+                              setModal({ orderId: order.id, type: 'status' })
+                            }}
+                            disabled={isPendingInstapay || order.status === 'cancelled'}>
+                            <span className="c-dot" style={{ background: st.dot }} />
+                            {st.label}
+                            {!isPendingInstapay && order.status !== 'cancelled' && ' ↓'}
                           </button>
                         </td>
                         <td onClick={e => e.stopPropagation()}>
-                          <button className="c-badge" style={{ background: ps.bg, color: ps.color }}
-                            onClick={() => setModal({ orderId: order.id, type: 'payment_status' })}>
-                            {ps.label} ↓
-                          </button>
+                          {isPendingInstapay && (
+                            <button className="c-confirm-btn"
+                              disabled={busy === order.id}
+                              onClick={() => { setConfirmError(null); setModal({ orderId: order.id, type: 'confirm' }) }}>
+                              {busy === order.id ? '...' : 'Confirm Payment ✦'}
+                            </button>
+                          )}
                         </td>
                       </tr>
 
@@ -422,21 +447,21 @@ export default function OrdersPage() {
                                 <p className="exp-lbl">Items in this order</p>
                                 {Array.isArray(order.items) && order.items.map((item, i) => (
                                   <div key={i} className="it-row">
-                                    {item.image
-                                      ? <img src={item.image} alt={item.name} className="it-img" />
+                                    {item.product.images?.[0]
+                                      ? <img src={item.product.images[0]} alt={item.product.name} className="it-img" />
                                       : <div className="it-ph">✦</div>}
-                                    <div style={{ flex:1 }}>
-                                      <div className="it-name">{item.name}</div>
-                                      {item.size && <div className="it-sz">Size: {item.size}</div>}
+                                    <div style={{ flex: 1 }}>
+                                      <div className="it-name">{item.product.name}</div>
+                                      <div className="it-sz">Size: {item.size}</div>
                                     </div>
-                                    <div className="it-price">EGP {Number(item.price).toLocaleString()}</div>
+                                    <div className="it-price">EGP {Number(item.product.price).toLocaleString()}</div>
                                   </div>
                                 ))}
                               </div>
 
                               {/* Customer info */}
                               <div>
-                                <p className="exp-lbl" style={{ justifyContent:'space-between' }}>
+                                <p className="exp-lbl">
                                   <span>Customer Details</span>
                                   <button className="exp-del-btn"
                                     onClick={() => setModal({ orderId: order.id, type: 'delete' })}>
@@ -444,13 +469,12 @@ export default function OrdersPage() {
                                   </button>
                                 </p>
                                 {[
-                                  { l:'Full Name',   v: order.name },
-                                  { l:'Email',       v: order.customer_email },
-                                  { l:'Phone',       v: order.phone },
-                                  { l:'City',        v: order.city },
-                                  { l:'Address',     v: order.address },
-                                  { l:'Notes',       v: order.notes },
-                                  { l:'Payment Ref', v: order.payment_id },
+                                  { l: 'Full Name', v: order.name },
+                                  { l: 'Email',    v: order.customer_email },
+                                  { l: 'Phone',    v: order.phone },
+                                  { l: 'City',     v: order.city },
+                                  { l: 'Address',  v: order.address },
+                                  { l: 'Notes',    v: order.notes },
                                 ].filter(d => d.v).map(d => (
                                   <div key={d.l} className="det-row">
                                     <span className="det-lbl">{d.l}</span>
@@ -487,9 +511,8 @@ export default function OrdersPage() {
                 <button className="pag-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>←</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => {
                   const show = n === 1 || n === totalPages || Math.abs(n - page) <= 1
-                  const ellipsisBefore = n === page - 2 && page > 3
-                  const ellipsisAfter  = n === page + 2 && page < totalPages - 2
-                  if (ellipsisBefore || ellipsisAfter) return <span key={n} className="pag-ellipsis">…</span>
+                  if (n === page - 2 && page > 3) return <span key={n} className="pag-ellipsis">…</span>
+                  if (n === page + 2 && page < totalPages - 2) return <span key={n} className="pag-ellipsis">…</span>
                   if (!show) return null
                   return (
                     <button key={n} className={`pag-btn${page === n ? ' cur' : ''}`} onClick={() => setPage(n)}>{n}</button>
@@ -502,17 +525,48 @@ export default function OrdersPage() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modals */}
       {modal && modalOrder && (() => {
+
+        // Confirm InstaPay payment
+        if (modal.type === 'confirm') return (
+          <div className="mo" onClick={() => { setModal(null); setConfirmError(null) }}>
+            <div className="mo-card" onClick={e => e.stopPropagation()}>
+              <p className="mo-title">Confirm payment?</p>
+              <p className="mo-sub">
+                #{modalOrder.id.slice(0, 8).toUpperCase()} · {modalOrder.name}<br />
+                EGP {Number(modalOrder.total).toLocaleString()} · InstaPay
+              </p>
+              <p className="mo-warn">
+                This will mark all items as sold and send the customer a confirmation email.
+                Only confirm after you have received and verified the payment.
+              </p>
+              {confirmError && <p className="mo-err">⚠ {confirmError}</p>}
+              <div className="mo-acts">
+                <button className="mo-cancel" onClick={() => { setModal(null); setConfirmError(null) }}>Cancel</button>
+                <button className="mo-confirm-act"
+                  disabled={busy === modal.orderId}
+                  onClick={() => confirmInstapay(modal.orderId)}>
+                  {busy === modal.orderId ? 'Confirming...' : 'Confirm & Notify Customer →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+
+        // Delete order
         if (modal.type === 'delete') return (
           <div className="mo" onClick={() => setModal(null)}>
             <div className="mo-card" onClick={e => e.stopPropagation()}>
               <p className="mo-title">Delete this order?</p>
               <p className="mo-sub">
-                #{modalOrder.id.slice(0,8).toUpperCase()} · {modalOrder.name || modalOrder.customer_email}<br/>
+                #{modalOrder.id.slice(0, 8).toUpperCase()} · {modalOrder.name || modalOrder.customer_email}<br />
                 EGP {Number(modalOrder.total).toLocaleString()} · {Array.isArray(modalOrder.items) ? modalOrder.items.length : 0} items
               </p>
-              <p className="mo-warn">This will permanently delete the order. Products will NOT be automatically restored to available. This cannot be undone.</p>
+              <p className="mo-warn">
+                This permanently deletes the order record. Products will NOT be automatically
+                restored to available — do that manually if needed. This cannot be undone.
+              </p>
               <div className="mo-acts">
                 <button className="mo-cancel" onClick={() => setModal(null)}>Cancel</button>
                 <button className="mo-danger" disabled={busy === modal.orderId}
@@ -524,31 +578,24 @@ export default function OrdersPage() {
           </div>
         )
 
-        const isOrder  = modal.type === 'order_status'
-        const options  = isOrder ? ORDER_STATUSES : PAYMENT_STATUSES
-        const current  = isOrder ? modalOrder.order_status : modalOrder.payment_status
-        const styles   = isOrder ? OS : PS
-        const willSell = !isOrder && current !== 'confirmed'
+        // Update order status (delivered / cancelled)
+        const nextOptions = modalOrder.status === 'confirmed'
+          ? ['delivered', 'cancelled']
+          : modalOrder.status === 'delivered'
+          ? ['cancelled']
+          : []
 
         return (
           <div className="mo" onClick={() => setModal(null)}>
             <div className="mo-card" onClick={e => e.stopPropagation()}>
-              <p className="mo-title">{isOrder ? 'Update order status' : 'Update payment status'}</p>
-              <p className="mo-sub">
-                #{modalOrder.id.slice(0,8).toUpperCase()} · {modalOrder.name || modalOrder.customer_email}
-              </p>
-              {willSell && (
-                <p className="mo-warn">Confirming payment will mark all items in this order as sold in your inventory.</p>
-              )}
+              <p className="mo-title">Update order status</p>
+              <p className="mo-sub">#{modalOrder.id.slice(0, 8).toUpperCase()} · {modalOrder.name}</p>
               <div className="mo-opts">
-                {options.map(opt => (
-                  <button key={opt} className={`mo-opt${current === opt ? ' cur' : ''}`}
+                {nextOptions.map(opt => (
+                  <button key={opt} className="mo-opt"
                     disabled={busy === modal.orderId}
-                    onClick={() => {
-                      if (current === opt) { setModal(null); return }
-                      isOrder ? updateOrderStatus(modal.orderId, opt) : updatePaymentStatus(modal.orderId, opt)
-                    }}>
-                    {styles[opt].label}{current === opt ? ' ✓' : ''}
+                    onClick={() => updateStatus(modal.orderId, opt)}>
+                    {STATUS[opt]?.label ?? opt}
                   </button>
                 ))}
               </div>
