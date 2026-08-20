@@ -187,7 +187,7 @@ function OrderConfirmedContent() {
       {/* Divider */}
       <div className="flex items-center gap-4 mb-10 w-full max-w-md">
         <span className="h-px flex-1 bg-taupe-light" />
-        <span className="font-display text-xl tracking-widest text-ink">FYNDE</span>
+        <span className="font-display text-xl tracking-widest text-ink">KHAMSIN</span>
         <span className="h-px flex-1 bg-taupe-light" />
       </div>
 

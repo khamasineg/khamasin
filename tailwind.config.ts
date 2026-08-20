@@ -9,17 +9,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        parchment: '#F0E9DF',
-        ivory: '#FAF6F0',
-        ink: '#1C1917',
-        sienna: '#A8401A',
-        taupe: '#BEB0A0',
-        'taupe-light': '#D9CFC4',
+        // KHAMSIN — "Minimal Saharan Editorial" (see CLAUDE.md §3)
+        parchment: '#F1EAD9', // Bone — primary background
+        ivory: '#FAF6EF',     // Bleached Bone — lightest bg / product photography backdrop
+        ink: '#2A2521',       // Basalt — near-black body text
+        sienna: '#B5673A',    // Clay — single warm accent, never more than ~5% of a layout
+        taupe: '#9C8563',     // Dune Shadow — mid-tone, borders, secondary text
+        'taupe-light': '#C6AE82', // Sand — primary brand tone, secondary surfaces
       },
       fontFamily: {
-        serif: ['Cormorant Garamond', 'serif'],
-        display: ['Bebas Neue', 'sans-serif'],
-        mono: ['Instrument Mono', 'monospace'],
+        // Display (headlines, product names): Fraunces, "Soft" optical size
+        serif: ['Fraunces', 'serif'],
+        display: ['Fraunces', 'serif'],
+        // Body (paragraphs, product copy): Inter / Public Sans
+        body: ['Inter', 'sans-serif'],
+        // Utility (prices, sizes, captions): Space Mono — numerals/small tags only
+        mono: ['Space Mono', 'monospace'],
       },
       animation: {
         ticker: 'ticker 30s linear infinite',

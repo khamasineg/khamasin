@@ -71,7 +71,7 @@ export default function Nav() {
             href="/"
             className="absolute left-1/2 -translate-x-1/2 font-display text-2xl tracking-[0.14em] text-ink hover:text-sienna transition-colors duration-300"
           >
-            FYNDE
+            KHAMSIN
           </Link>
 
           {/* Right links */}
@@ -146,7 +146,7 @@ export default function Nav() {
 
           {/* Centered logo */}
           <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-xl tracking-widest text-ink">
-            FYNDE
+            KHAMSIN
           </Link>
 
           {/* Bag button */}

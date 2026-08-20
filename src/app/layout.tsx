@@ -3,35 +3,33 @@ import './globals.css'
 import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
 import PageTransition from '@/components/layout/PageTransition'
-import Grain from '@/components/ui/Grain'
-import Cursor from '@/components/ui/Cursor'
 import Ticker from '@/components/ui/Ticker'
 import CartDrawer from '@/components/cart/CartDrawer'
 import Loader from '@/components/ui/Loader'
 import SmoothScroll from '@/components/ui/SmoothScroll'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.fyndethevintage.com'),
+  metadataBase: new URL('https://www.khamsin.com'),
   title: {
-    default: 'FYNDE — Rare finds, beautifully worn.',
-    template: '%s — FYNDE',
+    default: 'KHAMSIN — Cut for the wind.',
+    template: '%s — KHAMSIN',
   },
-  description: 'Curated vintage & deadstock clothing from the 60s through the 90s. One of one pieces, carefully sourced. Based in Cairo, Egypt.',
+  description: 'Unisex trousers, wide-leg pants, and tailored shorts in the tonal language of the desert. No denim, no noise. Based in Cairo, Egypt.',
   keywords: [
-    'vintage clothing egypt',
-    'deadstock cairo',
-    'rare vintage wear',
-    'vintage fashion egypt',
-    '60s 70s 80s 90s vintage',
-    'curated vintage cairo',
-    'one of one vintage',
-    'vintage deadstock egypt',
-    'فينتاج مصر',
-    'ملابس فينتاج',
+    'khamsin trousers',
+    'wide-leg pants egypt',
+    'unisex trousers egypt',
+    'tailored shorts egypt',
+    'desert-inspired clothing',
+    'contemporary trousers cairo',
+    'premium bottoms egypt',
+    'palazzo pants egypt',
+    'بناطيل مصر',
+    'ملابس صحراوية',
   ],
-  authors: [{ name: 'FYNDE' }],
-  creator: 'FYNDE',
-  publisher: 'FYNDE',
+  authors: [{ name: 'KHAMSIN' }],
+  creator: 'KHAMSIN',
+  publisher: 'KHAMSIN',
   formatDetection: {
     email: false,
     address: false,
@@ -40,23 +38,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://www.fyndethevintage.com',
-    siteName: 'FYNDE',
-    title: 'FYNDE — Rare finds, beautifully worn.',
-    description: 'Curated vintage & deadstock clothing from the 60s through the 90s. One of one pieces, carefully sourced. Based in Cairo, Egypt.',
+    url: 'https://www.khamsin.com',
+    siteName: 'KHAMSIN',
+    title: 'KHAMSIN — Cut for the wind.',
+    description: 'Unisex trousers, wide-leg pants, and tailored shorts in the tonal language of the desert. No denim, no noise. Based in Cairo, Egypt.',
     images: [
       {
         url: '/images/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'FYNDE — Rare vintage wear',
+        alt: 'KHAMSIN — Cut for the wind',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FYNDE — Rare finds, beautifully worn.',
-    description: 'Curated vintage & deadstock clothing from the 60s through the 90s. One of one pieces, carefully sourced.',
+    title: 'KHAMSIN — Cut for the wind.',
+    description: 'Unisex trousers, wide-leg pants, and tailored shorts in the tonal language of the desert.',
     images: ['/images/og-image.jpg'],
   },
   robots: {
@@ -91,14 +89,12 @@ export default function RootLayout({
       <head>
         <link
           rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap"
           as="style"
         />
       </head>
       <body className="bg-parchment text-ink">
         <Loader />
-        <Grain />
-        <Cursor />
         <SmoothScroll />
         <Ticker />
         <Nav />

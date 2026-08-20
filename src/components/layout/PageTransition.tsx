@@ -70,7 +70,7 @@ export default function PageTransition({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              FYNDE
+              KHAMSIN
             </motion.span>
           </motion.div>
         )}
@@ -87,7 +87,7 @@ export default function PageTransition({
               animate={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              FYNDE
+              KHAMSIN
             </motion.span>
           </motion.div>
         )}

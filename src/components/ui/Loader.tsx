@@ -44,12 +44,12 @@ export default function Loader() {
     >
       {/* Letters */}
       <div className="flex gap-[0.05em]">
-        {['F', 'Y', 'N', 'D', 'E'].map((letter, i) => (
+        {['K', 'H', 'A', 'M', 'S', 'I', 'N'].map((letter, i) => (
           <span
             key={letter}
             className="font-display text-parchment leading-none"
             style={{
-              fontSize: 'clamp(5rem, 16vw, 13rem)',
+              fontSize: 'clamp(3.4rem, 11vw, 8.5rem)',
               opacity: 0,
               transform: 'translateY(60px)',
               animation: `letterIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards`,
@@ -61,11 +61,11 @@ export default function Loader() {
         ))}
       </div>
 
-      {/* Sienna rule */}
+      {/* Clay rule */}
       <div
         style={{
           height: '1px',
-          background: '#A8401A',
+          background: '#B5673A',
           width: 0,
           marginTop: '0.6rem',
           animation: 'ruleGrow 0.8s ease 0.7s forwards',
@@ -78,11 +78,11 @@ export default function Loader() {
   style={{
     fontSize: '0.58rem',
     opacity: 0,
-    color: '#BEB0A0',
+    color: '#9C8563',
     animation: 'fadeIn 0.6s ease 0.9s forwards',
   }}
 >
-  Rare Vintage Wear — Est. 2025
+  Cut for the wind
 </p>
     </div>
   )

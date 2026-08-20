@@ -2,19 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Bebas+Neue&family=Instrument+Mono:wght@300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,1,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  --parchment: #F0E9DF;
-  --ivory: #FAF6F0;
-  --ink: #1C1917;
-  --sienna: #A8401A;
-  --taupe: #BEB0A0;
-  --taupe-light: #D9CFC4;
+  /* KHAMSIN — "Minimal Saharan Editorial" (see CLAUDE.md §3) */
+  --parchment: #F1EAD9; /* Bone */
+  --ivory: #FAF6EF;     /* Bleached Bone */
+  --ink: #2A2521;       /* Basalt */
+  --sienna: #B5673A;    /* Clay */
+  --taupe: #9C8563;     /* Dune Shadow */
+  --taupe-light: #C6AE82; /* Sand */
 
-  --font-serif: 'Cormorant Garamond', serif;
-  --font-display: 'Bebas Neue', sans-serif;
-  --font-mono: 'Instrument Mono', monospace;
+  --font-serif: 'Fraunces', serif;   /* Display role */
+  --font-display: 'Fraunces', serif; /* Display role */
+  --font-body: 'Inter', sans-serif;  /* Body role */
+  --font-mono: 'Space Mono', monospace; /* Utility role */
 }
 
 * {
@@ -26,7 +28,7 @@
 html {
   background-color: var(--parchment);
   color: var(--ink);
-  font-family: var(--font-serif);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -35,22 +37,10 @@ body {
   overflow-x: hidden;
 }
 
-/* Film grain overlay */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 128px 128px;
-}
-
 /* Typography utilities */
 .font-serif { font-family: var(--font-serif); }
 .font-display { font-family: var(--font-display); }
+.font-body { font-family: var(--font-body); }
 .font-mono { font-family: var(--font-mono); }
 
 /* Scrollbar */
@@ -65,12 +55,7 @@ body::after {
     transition-duration: 0.01ms !important;
   }
 }
-/* Hide default cursor on desktop */
-@media (hover: hover) {
-  * {
-    cursor: none !important;
-  }
-}@keyframes ticker {
+@keyframes ticker {
   0% { transform: translateX(0); }
   100% { transform: translateX(-33.333%); }
 }

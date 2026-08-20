@@ -11,7 +11,7 @@ export default function Footer() {
     >
       {/* Logo */}
       <span className="font-display text-xl tracking-[0.14em]" style={{ color: '#FAF6F0' }}>
-        FYNDE
+        KHAMSIN
       </span>
 
       {/* Links */}
@@ -39,7 +39,7 @@ export default function Footer() {
         className="font-mono text-[0.5rem] uppercase tracking-[0.15em]"
         style={{ color: 'rgba(190,176,160,0.3)' }}
       >
-        © {new Date().getFullYear()} FYNDE. All Rights Reserved.
+        © {new Date().getFullYear()} KHAMSIN. All Rights Reserved.
       </p>
     </footer>
   )

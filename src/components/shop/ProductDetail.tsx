@@ -58,16 +58,6 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
             )}
 
-            {/* Era stamp */}
-            <div className="absolute top-4 left-4 flex gap-2 z-10">
-              <span className="font-mono text-[9px] uppercase tracking-widest text-ivory border border-ivory/40 px-2 py-1 bg-ink/20">
-                {product.era}
-              </span>
-              <span className="font-mono text-[9px] uppercase tracking-widest text-ivory border border-ivory/40 px-2 py-1 bg-ink/20">
-                {product.condition}
-              </span>
-            </div>
-
             {/* Dot indicator — only when multiple images */}
             {product.images?.length > 1 && (
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">

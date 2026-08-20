@@ -82,15 +82,6 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Era stamp — hidden when sold */}
-        {!product.sold && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-ivory bg-sienna px-2 py-1">
-              {product.era}
-            </span>
-          </div>
-        )}
-
         {/* Image dots — only when multiple images and not sold */}
         {!product.sold && (product.images?.length ?? 0) > 1 && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex gap-1">
