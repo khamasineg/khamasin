@@ -3,41 +3,34 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import ContourTrace from '@/components/wind/ContourTrace'
 
-// A couple of contour lines tracing themselves across the wipe panel — reuses
-// the loader's draw-on keyframe so the two moments feel like the same motif.
 function TransitionContour() {
   return (
-    <svg
-      viewBox="0 0 800 200"
-      preserveAspectRatio="none"
-      className="absolute inset-0 w-full h-full pointer-events-none"
-    >
-      <path
+    <svg viewBox="0 0 800 200" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none">
+      <ContourTrace
         d="M-20 60 C 100 20, 200 100, 320 55 S 540 10, 660 60 S 850 90, 900 50"
-        fill="none"
-        stroke="#C6AE82"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        style={{ strokeDasharray: 1400, strokeDashoffset: 1400, animation: 'contour-trace 0.7s cubic-bezier(0.65,0,0.35,1) 0.05s forwards' }}
+        viewBox="0 0 800 200"
+        color="#C6AE82"
+        strokeWidth={1.5}
+        dashLength={1400}
+        duration={0.7}
+        delay={0.05}
       />
-      <path
+      <ContourTrace
         d="M-20 150 C 120 190, 220 120, 340 155 S 560 200, 680 150 S 860 110, 900 160"
-        fill="none"
-        stroke="#9C8563"
-        strokeWidth="1"
-        strokeLinecap="round"
-        style={{ strokeDasharray: 1400, strokeDashoffset: 1400, animation: 'contour-trace 0.7s cubic-bezier(0.65,0,0.35,1) 0.15s forwards' }}
+        viewBox="0 0 800 200"
+        color="#9C8563"
+        strokeWidth={1}
+        dashLength={1400}
+        duration={0.7}
+        delay={0.15}
       />
     </svg>
   )
 }
 
-export default function PageTransition({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isAdmin = pathname.startsWith('/admin')
   const [isMobile, setIsMobile] = useState(false)
@@ -54,6 +47,7 @@ export default function PageTransition({
       return
     }
     setTransitionStage('covering')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
   useEffect(() => {
@@ -65,25 +59,20 @@ export default function PageTransition({
       return () => clearTimeout(t)
     }
     if (transitionStage === 'revealing') {
-      const t = setTimeout(() => {
-        setTransitionStage('idle')
-      }, 600)
+      const t = setTimeout(() => setTransitionStage('idle'), 600)
       return () => clearTimeout(t)
     }
-  }, [transitionStage, children])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transitionStage])
 
-  // Admin routes and mobile: no animation, instant swap
   if (isMobile || isAdmin) {
     return <>{children}</>
   }
 
   return (
     <>
-      {/* Page content — swapped mid-transition */}
       <div>{displayChildren}</div>
 
-      {/* Transition panel — a wipe carrying a faint contour trail, so it reads
-          as wind passing through rather than a generic curtain wipe. */}
       <AnimatePresence>
         {transitionStage === 'covering' && (
           <motion.div

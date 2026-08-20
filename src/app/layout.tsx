@@ -3,11 +3,11 @@ import './globals.css'
 import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
 import PageTransition from '@/components/layout/PageTransition'
-import Ticker from '@/components/ui/Ticker'
 import CartDrawer from '@/components/cart/CartDrawer'
 import Loader from '@/components/ui/Loader'
 import SmoothScroll from '@/components/ui/SmoothScroll'
-import ContourWind from '@/components/ui/ContourWind'
+import WindField from '@/components/wind/WindField'
+import Grain from '@/components/ui/Grain'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.khamsin.com'),
@@ -31,11 +31,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'KHAMSIN' }],
   creator: 'KHAMSIN',
   publisher: 'KHAMSIN',
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
+  formatDetection: { email: false, address: false, telephone: false },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -43,14 +39,7 @@ export const metadata: Metadata = {
     siteName: 'KHAMSIN',
     title: 'KHAMSIN — Cut for the wind.',
     description: 'Unisex trousers, wide-leg pants, and tailored shorts in the tonal language of the desert. No denim, no noise. Based in Cairo, Egypt.',
-    images: [
-      {
-        url: '/images/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'KHAMSIN — Cut for the wind',
-      },
-    ],
+    images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'KHAMSIN — Cut for the wind' }],
   },
   twitter: {
     card: 'summary_large_image',
@@ -61,52 +50,33 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
+    googleBot: { index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1 },
   },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
-    other: {
-      rel: 'apple-touch-icon-precomposed',
-      url: '/apple-touch-icon.png',
-    },
-  },
+  // Icons are auto-generated from app/icon.tsx and app/apple-icon.tsx —
+  // no manual icons block needed.
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap"
-          as="style"
-        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
       <body className="bg-parchment text-ink">
+        {/* Signature wind field — fixed behind everything at z-0 */}
+        <WindField />
         <Loader />
-        <ContourWind />
         <SmoothScroll />
-        <Ticker />
         <Nav />
         <CartDrawer />
-        <div>
-          <PageTransition>
-            {children}
-          </PageTransition>
+        <div className="relative z-10">
+          <PageTransition>{children}</PageTransition>
         </div>
         <Footer />
+        {/* Grain sits above content, below nav — see component for the
+            CLAUDE.md §10 conflict note. */}
+        <Grain />
       </body>
     </html>
   )

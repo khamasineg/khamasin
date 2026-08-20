@@ -4,31 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { useCart } from '@/hooks/useCart'
-
-// A wavy contour trace instead of a straight underline — draws in on hover
-// or when the link is active. Pairs with the group-hover on the parent <Link>.
-function ContourUnderline({ active }: { active: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 60 6"
-      preserveAspectRatio="none"
-      className="absolute -bottom-1.5 left-0 w-full h-[6px] overflow-visible pointer-events-none"
-      aria-hidden="true"
-    >
-      <path
-        d="M0 4 C 8 1, 14 6, 22 3 S 36 0, 44 4 S 56 5, 60 2"
-        fill="none"
-        stroke="#B5673A"
-        strokeWidth="1"
-        strokeLinecap="round"
-        style={{ strokeDasharray: 90 }}
-        className={`transition-[stroke-dashoffset] duration-[400ms] ease-out ${
-          active ? '[stroke-dashoffset:0]' : '[stroke-dashoffset:90] group-hover:[stroke-dashoffset:0]'
-        }`}
-      />
-    </svg>
-  )
-}
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const NAV_LINKS = [
   { href: '/shop', label: 'Shop' },
@@ -38,182 +14,118 @@ const NAV_LINKS = [
 ]
 
 export default function Nav() {
-  const [isMobile, setIsMobile] = useState(false)
+  const isMobile = useIsMobile(700)
   const [menuOpen, setMenuOpen] = useState(false)
   const { itemCount, openCart } = useCart()
   const pathname = usePathname()
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  // Close menu on route change
   useEffect(() => { setMenuOpen(false) }, [pathname])
 
-  // Lock body scroll while menu is open
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
-  const isActive = (path: string) => {
-    if (path === '/') return pathname === '/'
-    return pathname.startsWith(path)
-  }
+  const isActive = (path: string) => (path === '/' ? pathname === '/' : pathname.startsWith(path))
 
   return (
     <>
-      {/* ─── Desktop Nav ─────────────────────────────────────────────────── */}
-      {!isMobile && (
-        <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-6 mix-blend-multiply">
-          {/* Left links */}
-          <div className="flex gap-8 items-center">
-            {NAV_LINKS.slice(0, 2).map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="group relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors"
-                style={{ color: isActive(link.href) ? '#B5673A' : 'rgba(42,37,33,0.5)' }}
-              >
-                {link.label}
-                <ContourUnderline active={isActive(link.href)} />
-              </Link>
-            ))}
-          </div>
-
-          {/* Center logo */}
-          <Link
-            href="/"
-            className="absolute left-1/2 -translate-x-1/2 font-display text-2xl tracking-[0.14em] text-ink hover:text-sienna transition-colors duration-300"
-          >
-            KHAMSIN
-          </Link>
-
-          {/* Right links */}
-          <div className="flex gap-8 items-center">
-            {NAV_LINKS.slice(2, 4).map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="group relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors"
-                style={{ color: isActive(link.href) ? '#B5673A' : 'rgba(42,37,33,0.5)' }}
-              >
-                {link.label}
-                <ContourUnderline active={isActive(link.href)} />
-              </Link>
-            ))}
-            <button
-              onClick={openCart}
-              className="font-mono text-[0.58rem] uppercase tracking-[0.22em] border border-ink px-4 py-2 hover:bg-sienna hover:border-sienna hover:text-ivory transition-colors duration-300 flex items-center gap-2"
-              style={{ color: '#2A2521' }}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <path d="M16 10a4 4 0 01-8 0"/>
-              </svg>
-              {itemCount > 0 ? `Bag (${itemCount})` : 'Bag'}
-            </button>
-          </div>
-        </nav>
-      )}
-
-      {/* ─── Mobile Top Bar — static (scrolls with page, not fixed) ─────── */}
-      {isMobile && (
-        <header
-          className="relative z-50 flex items-center justify-between bg-parchment border-b border-taupe-light"
-          style={{ paddingLeft: '1.25rem', paddingRight: '1.25rem', paddingTop: 'max(0.9rem, env(safe-area-inset-top))', paddingBottom: '0.9rem' }}
+      {/*
+        mix-blend-mode: difference (from the prototype) means the bar inverts
+        against whatever scrolls beneath it — it stays legible over pale dunes
+        and dark sections alike with no scroll listener and no colour swapping.
+        Everything inside must therefore be authored in Bleached Bone.
+      */}
+      <nav
+        className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between"
+        style={{ padding: '28px 5vw', mixBlendMode: 'difference' }}
+      >
+        <Link
+          href="/"
+          className="font-display"
+          style={{ fontWeight: 400, fontSize: 20, letterSpacing: '0.28em', color: '#FAF6EF' }}
         >
-          {/* Hamburger */}
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="Toggle menu"
-            aria-expanded={menuOpen}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-start"
-          >
-            <span style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '20px' }}>
-              <span
-                style={{
-                  display: 'block', height: '1.5px', background: '#2A2521', width: '100%',
-                  transform: menuOpen ? 'translateY(6.5px) rotate(45deg)' : 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.76,0,0.24,1)',
-                }}
-              />
-              <span
-                style={{
-                  display: 'block', height: '1.5px', background: '#2A2521', width: '100%',
-                  opacity: menuOpen ? 0 : 1,
-                  transition: 'opacity 0.2s',
-                }}
-              />
-              <span
-                style={{
-                  display: 'block', height: '1.5px', background: '#2A2521', width: '100%',
-                  transform: menuOpen ? 'translateY(-6.5px) rotate(-45deg)' : 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.76,0,0.24,1)',
-                }}
-              />
+          KHAMSIN
+        </Link>
+
+        {!isMobile && (
+          <ul className="flex list-none" style={{ gap: 36 }}>
+            {NAV_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="transition-opacity hover:opacity-60"
+                  style={{
+                    color: '#FAF6EF',
+                    fontSize: 13,
+                    letterSpacing: '0.05em',
+                    fontWeight: 500,
+                    opacity: isActive(link.href) ? 0.55 : 1,
+                  }}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="flex items-center" style={{ gap: 20 }}>
+          {!isMobile && (
+            <span className="font-mono" style={{ fontSize: 11, color: '#FAF6EF', letterSpacing: '0.05em', opacity: 0.8 }}>
+              N 30°02′ E 31°14′
             </span>
-          </button>
+          )}
 
-          {/* Centered logo */}
-          <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-xl tracking-widest text-ink">
-            KHAMSIN
-          </Link>
-
-          {/* Bag button */}
           <button
             onClick={openCart}
             aria-label="Open cart"
-            className="min-w-[44px] min-h-[44px] flex items-center justify-end gap-1.5"
+            className="font-mono transition-opacity hover:opacity-60"
+            style={{ fontSize: 11, color: '#FAF6EF', letterSpacing: '0.1em' }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2A2521" strokeWidth="1.5">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 01-8 0"/>
-            </svg>
-            {itemCount > 0 && (
-              <span className="font-mono text-[10px] text-ink">{itemCount}</span>
-            )}
+            BAG{itemCount > 0 ? ` (${itemCount})` : ''}
           </button>
-        </header>
-      )}
 
-      {/* ─── Mobile Hamburger Menu Overlay ────────────────────────────────── */}
+          {isMobile && (
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Toggle menu"
+              aria-expanded={menuOpen}
+              className="flex flex-col justify-center items-end"
+              style={{ width: 24, height: 24, gap: 5 }}
+            >
+              <span style={{ display: 'block', height: 1, width: 22, background: '#FAF6EF', transform: menuOpen ? 'translateY(6px) rotate(45deg)' : 'none', transition: 'transform .3s cubic-bezier(.76,0,.24,1)' }} />
+              <span style={{ display: 'block', height: 1, width: 22, background: '#FAF6EF', opacity: menuOpen ? 0 : 1, transition: 'opacity .2s' }} />
+              <span style={{ display: 'block', height: 1, width: 22, background: '#FAF6EF', transform: menuOpen ? 'translateY(-6px) rotate(-45deg)' : 'none', transition: 'transform .3s cubic-bezier(.76,0,.24,1)' }} />
+            </button>
+          )}
+        </div>
+      </nav>
+
+      {/* Mobile menu — deliberately outside the difference-blended bar */}
       {isMobile && (
         <div
           aria-hidden={!menuOpen}
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 49,
-            background: '#2A2521',
+            zIndex: 99,
+            background: '#F1EAD9',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            paddingLeft: '2rem',
-            paddingRight: '2rem',
+            padding: '0 2rem',
             paddingBottom: 'env(safe-area-inset-bottom)',
-            // Animate in/out
             opacity: menuOpen ? 1 : 0,
             pointerEvents: menuOpen ? 'auto' : 'none',
-            transform: menuOpen ? 'translateY(0)' : 'translateY(-12px)',
-            transition: 'opacity 0.35s cubic-bezier(0.76,0,0.24,1), transform 0.35s cubic-bezier(0.76,0,0.24,1)',
+            transform: menuOpen ? 'translateY(0)' : 'translateY(-10px)',
+            transition: 'opacity .4s cubic-bezier(.76,0,.24,1), transform .4s cubic-bezier(.76,0,.24,1)',
           }}
         >
-          {/* Clay rule top */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: '#B5673A' }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: '#B5673A' }} />
 
-          {/* Links */}
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(156,133,99,0.35)', margin: '0 0 2rem' }}>
+          <nav className="flex flex-col">
+            <p className="font-mono" style={{ fontSize: 10, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(156,133,99,0.6)', margin: '0 0 2rem' }}>
               Navigate
             </p>
             {[{ href: '/', label: 'Home' }, ...NAV_LINKS].map((link, i) => (
@@ -221,22 +133,19 @@ export default function Nav() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
+                className="font-display"
                 style={{
-                  fontFamily: "'Fraunces', serif",
                   fontStyle: 'italic',
                   fontWeight: 300,
-                  fontSize: 'clamp(2.4rem, 10vw, 3.5rem)',
-                  color: isActive(link.href) ? '#B5673A' : '#FAF6EF',
-                  textDecoration: 'none',
-                  lineHeight: 1.15,
-                  display: 'block',
-                  borderBottom: i < NAV_LINKS.length ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                  paddingBottom: '0.6rem',
-                  marginBottom: '0.6rem',
-                  // Staggered reveal
+                  fontSize: 'clamp(2.2rem, 9vw, 3.2rem)',
+                  color: isActive(link.href) ? '#B5673A' : '#2A2521',
+                  lineHeight: 1.2,
+                  borderBottom: i < NAV_LINKS.length ? '1px solid rgba(156,133,99,0.22)' : 'none',
+                  paddingBottom: '0.5rem',
+                  marginBottom: '0.5rem',
                   opacity: menuOpen ? 1 : 0,
-                  transform: menuOpen ? 'translateX(0)' : 'translateX(-16px)',
-                  transition: `opacity 0.4s ${0.07 * i}s cubic-bezier(0.22,1,0.36,1), transform 0.4s ${0.07 * i}s cubic-bezier(0.22,1,0.36,1), color 0.2s`,
+                  transform: menuOpen ? 'translateX(0)' : 'translateX(-14px)',
+                  transition: `opacity .45s ${0.06 * i}s cubic-bezier(.22,1,.36,1), transform .45s ${0.06 * i}s cubic-bezier(.22,1,.36,1)`,
                 }}
               >
                 {link.label}
@@ -244,37 +153,9 @@ export default function Nav() {
             ))}
           </nav>
 
-          {/* Bottom — bag + social */}
-          <div style={{ marginTop: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <button
-              onClick={() => { setMenuOpen(false); openCart() }}
-              style={{
-                fontFamily: "'Space Mono', monospace",
-                fontSize: '10px',
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: '#FAF6EF',
-                background: 'none',
-                border: '1px solid rgba(255,255,255,0.2)',
-                padding: '0.6rem 1.25rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <path d="M16 10a4 4 0 01-8 0"/>
-              </svg>
-              Bag {itemCount > 0 && `(${itemCount})`}
-            </button>
-
-            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '8px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(156,133,99,0.3)', margin: 0 }}>
-              Cairo, Egypt
-            </p>
-          </div>
+          <p className="font-mono mt-10" style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(156,133,99,0.7)' }}>
+            N 30°02′ E 31°14′ — CAIRO
+          </p>
         </div>
       )}
     </>

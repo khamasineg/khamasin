@@ -23,8 +23,6 @@ export const useCartStore = create<CartStore>()(
       addItem: (product, variant) => {
         const existing = get().items.find((item) => item.variantId === variant.id)
         if (existing) {
-          // Batch stock, not one-of-one — a repeat add increments quantity,
-          // capped at what's actually in stock for that size.
           set((state) => ({
             items: state.items.map((item) =>
               item.variantId === variant.id
@@ -54,22 +52,14 @@ export const useCartStore = create<CartStore>()(
       },
 
       clearCart: () => set({ items: [] }),
-
       openCart: () => set({ isOpen: true }),
-
       closeCart: () => set({ isOpen: false }),
 
-      total: () => {
-        return get().items.reduce(
-          (sum, item) => sum + item.product.price * item.quantity,
-          0
-        )
-      },
+      total: () => get().items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
     }),
     {
       name: 'khamsin-cart',
       storage: createJSONStorage(() => localStorage),
-      // Only persist items — isOpen always starts closed on fresh load
       partialize: (state) => ({ items: state.items }),
     }
   )

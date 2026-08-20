@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KHAMSIN — Cut for the wind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bleached: #FAF6EF;
+    --bone: #F1EAD9;
+    --sand: #C6AE82;
+    --dune: #9C8563;
+    --basalt: #2A2521;
+    --clay: #B5673A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bone);
+    color:var(--basalt);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--clay);color:var(--bleached);}
+
+  /* grain texture overlay used across the site for a photographic, non-digital feel */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:200;
+    opacity:0.05; mix-blend-mode:multiply;
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:28px 5vw;
+    mix-blend-mode:difference;
+  }
+  .wordmark{
+    font-family:'Fraunces',serif; font-weight:400; font-size:20px;
+    letter-spacing:0.28em; color:var(--bleached);
+  }
+  .nav-links{display:flex; gap:36px; list-style:none;}
+  .nav-links a{
+    color:var(--bleached); text-decoration:none; font-size:13px;
+    letter-spacing:0.05em; font-weight:500;
+  }
+  .coord{
+    font-family:'Space Mono',monospace; font-size:11px; color:var(--bleached);
+    letter-spacing:0.05em; opacity:0.8;
+  }
+  @media(max-width:700px){ .nav-links{display:none;} }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative; height:100vh; width:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; overflow:hidden;
+  }
+  .hero canvas{position:absolute; inset:0; width:100%; height:100%;}
+  .hero-content{position:relative; z-index:2;}
+  .hero h1{
+    font-family:'Fraunces',serif; font-weight:300; font-size:clamp(56px,12vw,160px);
+    letter-spacing:0.06em; color:var(--basalt); line-height:0.95;
+  }
+  .hero .tagline{
+    font-family:'Fraunces',serif; font-style:italic; font-weight:400;
+    font-size:clamp(16px,2vw,20px); margin-top:18px; color:var(--dune);
+    letter-spacing:0.02em;
+  }
+  .scroll-cue{
+    position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
+    font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.15em;
+    color:var(--dune); display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .scroll-cue::after{
+    content:""; width:1px; height:36px; background:var(--dune);
+    animation:pulse-line 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse-line{0%,100%{opacity:0.2;}50%{opacity:0.9;}}
+
+  /* ---------- MANIFESTO ---------- */
+  .manifesto{
+    padding:160px 8vw; max-width:900px; margin:0 auto; text-align:center;
+    opacity:0; transform:translateY(24px); transition:opacity 1s ease, transform 1s ease;
+  }
+  .manifesto.in-view{opacity:1; transform:translateY(0);}
+  .manifesto p{
+    font-family:'Fraunces',serif; font-weight:300; font-size:clamp(24px,3.4vw,38px);
+    line-height:1.4; color:var(--basalt);
+  }
+  .manifesto p em{font-style:italic; color:var(--clay);}
+
+  .pillars{
+    display:flex; justify-content:center; gap:0; margin-top:80px;
+    border-top:1px solid var(--dune); border-bottom:1px solid var(--dune);
+    flex-wrap:wrap;
+  }
+  .pillar{
+    flex:1; min-width:150px; padding:28px 12px; text-align:center;
+    border-left:1px solid var(--dune);
+  }
+  .pillar:first-child{border-left:none;}
+  .pillar .label{
+    font-family:'Space Mono',monospace; font-size:11px; letter-spacing:0.1em;
+    color:var(--dune); text-transform:uppercase;
+  }
+  .pillar .word{
+    font-family:'Fraunces',serif; font-size:19px; margin-top:8px; color:var(--basalt);
+  }
+
+  /* ---------- PRODUCTS ---------- */
+  .products{padding:100px 6vw 60px;}
+  .section-head{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    margin-bottom:48px; flex-wrap:wrap; gap:16px;
+  }
+  .section-head h2{
+    font-family:'Fraunces',serif; font-weight:300; font-size:clamp(32px,4vw,48px);
+  }
+  .section-head span{
+    font-family:'Space Mono',monospace; font-size:12px; color:var(--dune);
+  }
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:2px;
+    background:var(--dune);
+  }
+  .card{
+    background:var(--bone); padding:0; position:relative; overflow:hidden;
+    cursor:pointer;
+  }
+  .swatch{
+    height:340px; position:relative; overflow:hidden;
+    transition:transform 1.4s cubic-bezier(.16,1,.3,1);
+  }
+  .card:hover .swatch{transform:scale(1.04);}
+  .swatch-inner{position:absolute; inset:-10%; transition:transform 6s ease;}
+  .card:hover .swatch-inner{transform:translate(2%,-2%);}
+  .card-info{padding:22px 20px 28px;}
+  .card-info .name{
+    font-family:'Fraunces',serif; font-style:italic; font-size:20px; color:var(--basalt);
+  }
+  .card-info .desc{font-size:13px; color:var(--dune); margin-top:6px; line-height:1.5;}
+  .card-info .price{
+    font-family:'Space Mono',monospace; font-size:13px; margin-top:14px; color:var(--clay);
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding:100px 6vw 40px; text-align:center; position:relative;
+  }
+  footer .fword{
+    font-family:'Fraunces',serif; font-size:15px; letter-spacing:0.3em; color:var(--basalt);
+  }
+  footer .fmeta{
+    font-family:'Space Mono',monospace; font-size:11px; color:var(--dune); margin-top:14px;
+    letter-spacing:0.05em;
+  }
+  footer .flinks{
+    display:flex; justify-content:center; gap:24px; margin-top:24px; list-style:none;
+  }
+  footer .flinks a{color:var(--dune); text-decoration:none; font-size:12px;}
+</style>
+</head>
+<body>
+
+<svg class="grain" width="100%" height="100%">
+  <filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/></filter>
+  <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+</svg>
+
+<nav>
+  <div class="wordmark">KHAMSIN</div>
+  <ul class="nav-links">
+    <li><a href="#products">Shop</a></li>
+    <li><a href="#story">Story</a></li>
+    <li><a href="#">Journal</a></li>
+  </ul>
+  <div class="coord">N 30°02' E 31°14'</div>
+</nav>
+
+<section class="hero">
+  <canvas id="windCanvas"></canvas>
+  <div class="hero-content">
+    <h1>KHAMSIN</h1>
+    <div class="tagline">Cut for the wind.</div>
+  </div>
+  <div class="scroll-cue">SCROLL</div>
+</section>
+
+<section class="manifesto" id="story">
+  <p>No denim. <em>No noise.</em> Bottoms built the way the desert builds a dune — by wind, over time, into a shape that moves.</p>
+  <div class="pillars">
+    <div class="pillar"><div class="label">Pillar</div><div class="word">Stillness</div></div>
+    <div class="pillar"><div class="label">Pillar</div><div class="word">Terrain</div></div>
+    <div class="pillar"><div class="label">Pillar</div><div class="word">Movement</div></div>
+    <div class="pillar"><div class="label">Pillar</div><div class="word">Precision</div></div>
+  </div>
+</section>
+
+<section class="products" id="products">
+  <div class="section-head">
+    <h2>The Collection</h2>
+    <span>04 STYLES — FW26</span>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="swatch" style="background:linear-gradient(135deg,#E4D7BC,#B79A6C 55%,#8A7150);">
+        <div class="swatch-inner" style="background:radial-gradient(circle at 30% 20%, rgba(250,246,239,0.4), transparent 60%);width:100%;height:100%;"></div>
+      </div>
+      <div class="card-info">
+        <div class="name">The Erg Trouser</div>
+        <div class="desc">Wide through the leg, tapered at the ankle. Mid-weight tencel twill.</div>
+        <div class="price">EGP 2,400</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="swatch" style="background:linear-gradient(135deg,#D8C9A8,#A67C52 60%,#5C4A38);">
+        <div class="swatch-inner" style="background:radial-gradient(circle at 70% 30%, rgba(250,246,239,0.35), transparent 55%);width:100%;height:100%;"></div>
+      </div>
+      <div class="card-info">
+        <div class="name">The Hamada Short</div>
+        <div class="desc">Structured, high-rise, tailored short in brushed cotton gabardine.</div>
+        <div class="price">EGP 1,650</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="swatch" style="background:linear-gradient(135deg,#F1E9D6,#C9B896 55%,#96805D);">
+        <div class="swatch-inner" style="background:radial-gradient(circle at 40% 60%, rgba(250,246,239,0.4), transparent 60%);width:100%;height:100%;"></div>
+      </div>
+      <div class="card-info">
+        <div class="name">The Sabkha Pant</div>
+        <div class="desc">Tone-on-tone, palest piece in the collection. Fluid crepe, pleated front.</div>
+        <div class="price">EGP 2,150</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="swatch" style="background:linear-gradient(135deg,#C9AE82,#9C8563 50%,#3E332B);">
+        <div class="swatch-inner" style="background:radial-gradient(circle at 60% 20%, rgba(250,246,239,0.3), transparent 55%);width:100%;height:100%;"></div>
+      </div>
+      <div class="card-info">
+        <div class="name">The Khamsin Wrap</div>
+        <div class="desc">The wind piece. Palazzo-cut, unstructured, moves with the body.</div>
+        <div class="price">EGP 2,600</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fword">KHAMSIN</div>
+  <div class="fmeta">CAIRO — EST. 2026 — NO DENIM. NO NOISE.</div>
+  <ul class="flinks">
+    <li><a href="#">Instagram</a></li>
+    <li><a href="#">Contact</a></li>
+    <li><a href="#">Size Guide</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Wind / dune contour-line animation — the site's signature element.
+  // Multiple horizontal ridge lines, phase-shifted sine waves, drifting slowly like windblown sand.
+  const canvas = document.getElementById('windCanvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  function resize(){
+    w = canvas.offsetWidth; h = canvas.offsetHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const lineColors = ['#9C8563','#C6AE82','#9C8563','#B5673A'];
+  const lines = Array.from({length: 14}).map((_, i) => ({
+    yBase: (i+0.5) / 14,
+    amp: 14 + Math.random()*26,
+    freq: 0.6 + Math.random()*1.1,
+    speed: 0.08 + Math.random()*0.18,
+    phase: Math.random()*Math.PI*2,
+    color: lineColors[i % lineColors.length],
+    opacity: 0.10 + Math.random()*0.16,
+    width: Math.random() < 0.2 ? 1.6 : 0.8
+  }));
+
+  let t = 0;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    // base sand-toned backdrop gradient
+    const g = ctx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0, '#FAF6EF');
+    g.addColorStop(1, '#F1EAD9');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+
+    lines.forEach(line => {
+      ctx.beginPath();
+      const yC = line.yBase * h;
+      for(let x=0; x<=w; x+=6){
+        const y = yC + Math.sin((x/w)*Math.PI*2*line.freq + t*line.speed + line.phase) * line.amp;
+        if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = line.color;
+      ctx.globalAlpha = line.opacity;
+      ctx.lineWidth = line.width;
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+
+    if(!reduceMotion){ t += 0.6; requestAnimationFrame(draw); }
+  }
+  draw();
+
+  // scroll reveal for manifesto
+  const manifesto = document.querySelector('.manifesto');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in-view'); });
+  }, {threshold:0.3});
+  io.observe(manifesto);
+</script>
+
+</body>
+</html>

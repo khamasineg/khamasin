@@ -2,21 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,1,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  /* KHAMSIN — "Minimal Saharan Editorial" (see CLAUDE.md §3) */
-  --parchment: #F1EAD9; /* Bone */
-  --ivory: #FAF6EF;     /* Bleached Bone */
-  --ink: #2A2521;       /* Basalt */
-  --sienna: #B5673A;    /* Clay */
-  --taupe: #9C8563;     /* Dune Shadow */
-  --taupe-light: #C6AE82; /* Sand */
+  /* KHAMSIN — "Minimal Saharan Editorial" (CLAUDE.md §3) */
+  --bleached: #FAF6EF;
+  --bone: #F1EAD9;
+  --sand: #C6AE82;
+  --dune: #9C8563;
+  --basalt: #2A2521;
+  --clay: #B5673A;
 
-  --font-serif: 'Fraunces', serif;   /* Display role */
-  --font-display: 'Fraunces', serif; /* Display role */
-  --font-body: 'Inter', sans-serif;  /* Body role */
-  --font-mono: 'Space Mono', monospace; /* Utility role */
+  /* aliases used by Tailwind theme */
+  --parchment: var(--bone);
+  --ivory: var(--bleached);
+  --ink: var(--basalt);
+  --sienna: var(--clay);
+  --taupe: var(--dune);
+  --taupe-light: var(--sand);
+
+  --font-display: 'Fraunces', serif;
+  --font-serif: 'Fraunces', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'Space Mono', monospace;
 }
 
 * {
@@ -26,15 +34,24 @@
 }
 
 html {
-  background-color: var(--parchment);
-  color: var(--ink);
+  background-color: var(--bone);
+  color: var(--basalt);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
   min-height: 100vh;
   overflow-x: hidden;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+::selection {
+  background: var(--clay);
+  color: var(--bleached);
 }
 
 /* Typography utilities */
@@ -43,59 +60,44 @@ body {
 .font-body { font-family: var(--font-body); }
 .font-mono { font-family: var(--font-mono); }
 
+/* Visible keyboard focus — quality floor, CLAUDE.md §4 */
+:focus-visible {
+  outline: 1px solid var(--clay);
+  outline-offset: 3px;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--parchment); }
-::-webkit-scrollbar-thumb { background: var(--taupe); }
+::-webkit-scrollbar-track { background: var(--bone); }
+::-webkit-scrollbar-thumb { background: var(--dune); }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
-@keyframes ticker {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-33.333%); }
+
+/* ─── Motif keyframes ──────────────────────────────────────────────────── */
+@keyframes pulse-line {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.9; }
 }
-/* ContourWind — signature motif, see components/ui/ContourWind.tsx */
 @keyframes contour-drift {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-/* Loader's contour-trace — see components/ui/Loader.tsx */
 @keyframes contour-trace {
   to { stroke-dashoffset: 0; }
 }
-/* Ambient breathing used by ContourWind's opacity gust */
-@keyframes contour-breathe {
-  0%, 100% { opacity: var(--gust-min, 0.7); }
-  50% { opacity: 1; }
+@keyframes letter-in {
+  to { opacity: 1; transform: translateY(0); }
 }
-/* Safe area support for notch devices */
-body {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+@keyframes rule-grow {
+  to { width: min(320px, 55vw); }
 }
-@keyframes letterIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes ruleGrow {
-  to {
-    width: min(320px, 55vw);
-  }
-}
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+@keyframes fade-in {
+  to { opacity: 1; }
 }

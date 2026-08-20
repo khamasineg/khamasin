@@ -3,15 +3,18 @@
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Lenis from 'lenis'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 export default function SmoothScroll() {
   const pathname = usePathname()
   const isAdmin = pathname.startsWith('/admin')
 
   useEffect(() => {
-    // Desktop only, and never on admin routes (admin scrolls inside a fixed div
-    // that Lenis cannot reach, causing wheel events to be eaten)
     if (window.innerWidth < 768 || isAdmin) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    gsap.registerPlugin(ScrollTrigger)
 
     const lenis = new Lenis({
       duration: 1.2,
@@ -19,18 +22,15 @@ export default function SmoothScroll() {
       orientation: 'vertical',
       smoothWheel: true,
     })
-    let rafId = 0
 
-    function raf(time: number) {
-      lenis.raf(time)
-      rafId = requestAnimationFrame(raf)
-    }
-
-    rafId = requestAnimationFrame(raf)
+    // Keep GSAP's ScrollTrigger in sync with Lenis's virtual scroll position
+    lenis.on('scroll', ScrollTrigger.update)
+    gsap.ticker.add((time) => lenis.raf(time * 1000))
+    gsap.ticker.lagSmoothing(0)
 
     return () => {
-      cancelAnimationFrame(rafId)
       lenis.destroy()
+      gsap.ticker.remove((time) => lenis.raf(time * 1000))
     }
   }, [isAdmin])
 

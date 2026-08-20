@@ -10,38 +10,24 @@ export default function CartItem({ item }: { item: CartItemType }) {
 
   return (
     <div className="flex gap-4 py-4 border-b border-taupe-light">
-      {/* Image */}
       <div className="relative w-20 h-24 flex-shrink-0 overflow-hidden bg-taupe-light">
         {item.product.images?.[0] ? (
-          <img
-            src={item.product.images[0]}
-            alt={item.product.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <img src={item.product.images[0]} alt={item.product.name} className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-mono text-[8px] uppercase tracking-widest text-taupe">
-              No image
-            </span>
+            <span className="font-mono text-[8px] uppercase tracking-widest text-taupe">No image</span>
           </div>
         )}
       </div>
 
-      {/* Info */}
       <div className="flex-1 flex flex-col justify-between">
         <div>
-          <p className="font-serif text-sm text-ink leading-snug mb-1">
-            {item.product.name}
-          </p>
-          <p className="font-mono text-[9px] uppercase tracking-widest text-taupe">
-            Size: {item.size}
-          </p>
+          <p className="font-serif text-sm text-ink leading-snug mb-1">{item.product.name}</p>
+          <p className="font-mono text-[9px] uppercase tracking-widest text-taupe">Size: {item.size}</p>
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <p className="font-mono text-xs text-ink">
-              {item.product.price.toLocaleString()} EGP
-            </p>
+            <p className="font-mono text-xs text-ink">{item.product.price.toLocaleString()} EGP</p>
             <div className="flex items-center border border-taupe-light">
               <button
                 onClick={() => setQuantity(item.variantId, item.quantity - 1)}

@@ -1,55 +1,32 @@
 import Link from 'next/link'
 
-// A drifting contour line standing in for the footer's top border — same
-// motif as ContourWind, just one quiet line marking the edge instead of a
-// hard rule. Skips the drift animation on mobile per the reduced-motion rule.
-function FooterContour() {
-  return (
-    <div className="absolute top-0 left-0 right-0 h-px overflow-hidden pointer-events-none">
-      <svg
-        viewBox="0 0 1600 12"
-        preserveAspectRatio="none"
-        className="w-[200%] h-3 block md:motion-safe:animate-[contour-drift_140s_linear_infinite]"
-      >
-        <path
-          d="M0 6 C 60 1, 120 11, 180 5 S 300 -1, 360 6 S 480 12, 540 4 S 660 -2, 720 6 L 800 5 C 860 0, 920 10, 980 5 S 1100 -1, 1160 6 S 1280 12, 1340 4 S 1460 -2, 1520 6 L 1600 5"
-          fill="none"
-          stroke="rgba(198,174,130,0.35)"
-          strokeWidth="1"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
-    </div>
-  )
-}
+const LINKS = [
+  { href: '/shop', label: 'Shop' },
+  { href: '/collections', label: 'Collections' },
+  { href: '/lookbook', label: 'Lookbook' },
+  { href: '/about', label: 'About' },
+]
 
+// Centred and transparent, per the prototype — the wind field carries through
+// underneath rather than the footer sitting on its own slab of colour.
 export default function Footer() {
   return (
-    <footer
-      className="relative px-6 py-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-4 pb-24 md:pb-6"
-      style={{
-        background: '#2A2521',
-      }}
-    >
-      <FooterContour />
-      {/* Logo */}
-      <span className="font-display text-xl tracking-[0.14em]" style={{ color: '#FAF6EF' }}>
+    <footer className="relative z-10 text-center" style={{ padding: '100px 6vw 40px' }}>
+      <div className="font-display text-ink" style={{ fontSize: 15, letterSpacing: '0.3em' }}>
         KHAMSIN
-      </span>
+      </div>
 
-      {/* Links */}
-      <ul className="flex flex-wrap items-center justify-center gap-6 list-none">
-        {[
-          { href: '/shop', label: 'Shop' },
-          { href: '/collections', label: 'Collections' },
-          { href: '/lookbook', label: 'Lookbook' },
-          { href: '/about', label: 'About' },
-        ].map((link) => (
+      <div className="font-mono" style={{ fontSize: 11, color: '#9C8563', marginTop: 14, letterSpacing: '0.05em' }}>
+        CAIRO — EST. 2026 — NO DENIM. NO NOISE.
+      </div>
+
+      <ul className="flex justify-center list-none" style={{ gap: 24, marginTop: 24 }}>
+        {LINKS.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="font-mono text-[0.5rem] uppercase tracking-[0.2em] transition-colors"
-              style={{ color: 'rgba(156,133,99,0.5)' }}
+              className="transition-opacity hover:opacity-60"
+              style={{ color: '#9C8563', fontSize: 12 }}
             >
               {link.label}
             </Link>
@@ -57,13 +34,9 @@ export default function Footer() {
         ))}
       </ul>
 
-      {/* Copyright */}
-      <p
-        className="font-mono text-[0.5rem] uppercase tracking-[0.15em]"
-        style={{ color: 'rgba(156,133,99,0.3)' }}
-      >
-        © {new Date().getFullYear()} KHAMSIN. All Rights Reserved.
-      </p>
+      <div className="font-mono" style={{ fontSize: 10, color: 'rgba(156,133,99,0.5)', marginTop: 40, letterSpacing: '0.05em' }}>
+        © {new Date().getFullYear()} KHAMSIN
+      </div>
     </footer>
   )
 }

@@ -1,8 +1,6 @@
 // Matches supabase/migrations/0001_khamsin_schema.sql — CLAUDE.md §8.
-// FYNDE's one-of-one model (era/brand/condition/sold/sizes[]) has no
-// equivalent here: KHAMSIN is batch stock, one row per size in
-// product_variants, and availability is `active` + per-variant stock,
-// not a single sold boolean.
+// Batch stock, one row per size in product_variants — availability is
+// `active` + per-variant stock, not a single sold boolean.
 
 export type ProductVariant = {
   id: string
@@ -35,8 +33,7 @@ export type Product = {
   collection: string | null
   active: boolean
   created_at: string
-  // Present when the query joins it (`select('*, product_variants(*)')`) —
-  // absent otherwise, so always guard with `product.product_variants?.`.
+  // Present when the query joins it (`select('*, product_variants(*)')`)
   product_variants?: ProductVariant[]
 }
 

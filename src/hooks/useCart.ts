@@ -21,8 +21,6 @@ export function useCart() {
     openCart,
     closeCart,
     total,
-    // Sum of quantities, not line-item count — a batch-stock cart can hold
-    // more than one of a given size, unlike FYNDE's one-of-one pieces.
     itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
   }
 }

@@ -1,46 +1,32 @@
-import { createServerSupabase } from '@/lib/supabase-server'
-import ProductDetail from '@/components/shop/ProductDetail'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { supabase } from '@/lib/supabase'
+import { Product } from '@/types'
+import ProductDetail from '@/components/shop/ProductDetail'
 
-// Always render on request — never serve a cached version.
-// Product images/prices can be edited from admin at any time.
-export const dynamic = 'force-dynamic'
-
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const supabase = createServerSupabase()
-  const { data: product } = await supabase
+async function getProduct(slug: string): Promise<Product | null> {
+  const { data, error } = await supabase
     .from('products')
-    .select('name, era, brand, condition, price')
-    .eq('slug', params.slug)
+    .select('*, product_variants(*)')
+    .eq('slug', slug)
+    .eq('active', true)
     .single()
 
-  if (!product) return {}
+  if (error || !data) return null
+  return data as unknown as Product
+}
 
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const product = await getProduct(params.slug)
+  if (!product) return { title: 'Not Found' }
   return {
     title: product.name,
-    description: `${product.era} · ${product.brand} · ${product.condition} — ${product.price.toLocaleString()} EGP. One of one vintage piece, available now at FYNDE.`,
+    description: product.description ?? `${product.name} — ${product.landform}, ${product.price.toLocaleString()} EGP.`,
   }
 }
 
-export default async function ProductPage({
-  params,
-}: {
-  params: { slug: string }
-}) {
-  // Fresh client per request — bypasses Next.js data cache entirely
-  const supabase = createServerSupabase()
-
-  const { data: product, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', params.slug)
-    .single()
-
-  if (error || !product) notFound()
-
-  return (
-    <main className="min-h-screen bg-parchment">
-      <ProductDetail product={product} />
-    </main>
-  )
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+  const product = await getProduct(params.slug)
+  if (!product) notFound()
+  return <ProductDetail product={product} />
 }
