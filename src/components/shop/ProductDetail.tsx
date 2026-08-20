@@ -11,6 +11,11 @@ export default function ProductDetail({ product }: { product: Product }) {
   const { addItem, openCart } = useCart()
   const touchStartX = useRef<number>(0)
 
+  const variants = product.product_variants ?? []
+  const inStockVariants = variants.filter((v) => v.stock_quantity > 0)
+  const soldOut = variants.length > 0 && inStockVariants.length === 0
+  const selectedVariant = inStockVariants.find((v) => v.size === selectedSize) ?? null
+
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
   }
@@ -25,8 +30,8 @@ export default function ProductDetail({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
-    if (!selectedSize) return
-    addItem(product, selectedSize)
+    if (!selectedVariant) return
+    addItem(product, selectedVariant)
     setAdded(true)
     openCart()
     setTimeout(() => setAdded(false), 2000)
@@ -80,11 +85,11 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
             )}
 
-            {/* Sold overlay */}
-            {product.sold && (
+            {/* Sold out overlay */}
+            {soldOut && (
               <div className="absolute inset-0 bg-parchment/70 flex items-center justify-center z-10">
                 <span className="font-mono text-xs uppercase tracking-widest text-ink">
-                  Sold
+                  Sold Out
                 </span>
               </div>
             )}
@@ -116,12 +121,10 @@ export default function ProductDetail({ product }: { product: Product }) {
 
         {/* Right — Info */}
         <div className="flex flex-col">
-          {/* Brand */}
-          {product.brand && (
-            <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mb-2">
-              {product.brand}
-            </p>
-          )}
+          {/* Landform */}
+          <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mb-2">
+            {product.landform}
+          </p>
 
           {/* Name */}
           <h1 className="font-serif text-3xl md:text-4xl text-ink leading-tight mb-4">
@@ -137,47 +140,53 @@ export default function ProductDetail({ product }: { product: Product }) {
           <div className="h-px bg-taupe-light mb-8" />
 
           {/* Size selector */}
-          {!product.sold && (
+          {!soldOut && (
             <div className="mb-8">
               <p className="font-mono text-[10px] uppercase tracking-widest text-taupe mb-3">
                 Select Size
               </p>
               <div className="flex flex-wrap gap-2">
-                {product.sizes?.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`font-mono text-xs uppercase tracking-widest px-4 py-3 min-w-[44px] min-h-[44px] border transition-colors ${
-                      selectedSize === size
-                        ? 'bg-ink text-ivory border-ink'
-                        : 'border-taupe-light text-ink hover:border-ink'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {variants.map((variant) => {
+                  const outOfStock = variant.stock_quantity <= 0
+                  return (
+                    <button
+                      key={variant.id}
+                      onClick={() => !outOfStock && setSelectedSize(variant.size)}
+                      disabled={outOfStock}
+                      className={`font-mono text-xs uppercase tracking-widest px-4 py-3 min-w-[44px] min-h-[44px] border transition-colors ${
+                        outOfStock
+                          ? 'border-taupe-light text-taupe-light cursor-not-allowed line-through'
+                          : selectedSize === variant.size
+                          ? 'bg-ink text-ivory border-ink'
+                          : 'border-taupe-light text-ink hover:border-ink'
+                      }`}
+                    >
+                      {variant.size}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
 
           {/* Add to cart */}
-          {!product.sold ? (
+          {!soldOut ? (
             <button
               onClick={handleAddToCart}
-              disabled={!selectedSize}
+              disabled={!selectedVariant}
               className={`w-full font-mono text-xs uppercase tracking-widest py-4 min-h-[44px] transition-colors mb-4 ${
-                !selectedSize
+                !selectedVariant
                   ? 'bg-taupe-light text-taupe cursor-not-allowed'
                   : added
                   ? 'bg-sienna text-ivory'
                   : 'bg-ink text-ivory hover:bg-sienna'
               }`}
             >
-              {added ? 'Added to Cart' : !selectedSize ? 'Select a Size' : 'Add to Cart'}
+              {added ? 'Added to Cart' : !selectedVariant ? 'Select a Size' : 'Add to Cart'}
             </button>
           ) : (
             <div className="w-full font-mono text-xs uppercase tracking-widest py-4 text-center border border-taupe-light text-taupe mb-4">
-              Sold
+              Sold Out
             </div>
           )}
 
@@ -202,23 +211,21 @@ export default function ProductDetail({ product }: { product: Product }) {
               Details
             </p>
             <div className="flex justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-taupe">Era</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink">{product.era}</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-taupe">Category</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink">{product.category}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-taupe">Condition</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink">{product.condition}</span>
-            </div>
-            {product.brand && (
+            {product.fabric && (
               <div className="flex justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-taupe">Brand</span>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-ink">{product.brand}</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-taupe">Fabric</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink">{product.fabric}</span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-taupe">Collection</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink">{product.collection}</span>
-            </div>
+            {product.collection && (
+              <div className="flex justify-between">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-taupe">Collection</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink">{product.collection}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -59,6 +59,20 @@ body {
   0% { transform: translateX(0); }
   100% { transform: translateX(-33.333%); }
 }
+/* ContourWind — signature motif, see components/ui/ContourWind.tsx */
+@keyframes contour-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+/* Loader's contour-trace — see components/ui/Loader.tsx */
+@keyframes contour-trace {
+  to { stroke-dashoffset: 0; }
+}
+/* Ambient breathing used by ContourWind's opacity gust */
+@keyframes contour-breathe {
+  0%, 100% { opacity: var(--gust-min, 0.7); }
+  50% { opacity: 1; }
+}
 /* Safe area support for notch devices */
 body {
   padding-top: env(safe-area-inset-top);

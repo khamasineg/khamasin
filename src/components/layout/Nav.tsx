@@ -5,6 +5,31 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { useCart } from '@/hooks/useCart'
 
+// A wavy contour trace instead of a straight underline — draws in on hover
+// or when the link is active. Pairs with the group-hover on the parent <Link>.
+function ContourUnderline({ active }: { active: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 60 6"
+      preserveAspectRatio="none"
+      className="absolute -bottom-1.5 left-0 w-full h-[6px] overflow-visible pointer-events-none"
+      aria-hidden="true"
+    >
+      <path
+        d="M0 4 C 8 1, 14 6, 22 3 S 36 0, 44 4 S 56 5, 60 2"
+        fill="none"
+        stroke="#B5673A"
+        strokeWidth="1"
+        strokeLinecap="round"
+        style={{ strokeDasharray: 90 }}
+        className={`transition-[stroke-dashoffset] duration-[400ms] ease-out ${
+          active ? '[stroke-dashoffset:0]' : '[stroke-dashoffset:90] group-hover:[stroke-dashoffset:0]'
+        }`}
+      />
+    </svg>
+  )
+}
+
 const NAV_LINKS = [
   { href: '/shop', label: 'Shop' },
   { href: '/collections', label: 'Collections' },
@@ -54,14 +79,11 @@ export default function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors"
-                style={{ color: isActive(link.href) ? '#A8401A' : 'rgba(28,25,23,0.5)' }}
+                className="group relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors"
+                style={{ color: isActive(link.href) ? '#B5673A' : 'rgba(42,37,33,0.5)' }}
               >
                 {link.label}
-                <span
-                  className="absolute -bottom-1 left-0 h-px bg-sienna transition-all duration-300"
-                  style={{ width: isActive(link.href) ? '100%' : '0%' }}
-                />
+                <ContourUnderline active={isActive(link.href)} />
               </Link>
             ))}
           </div>
@@ -80,20 +102,17 @@ export default function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors"
-                style={{ color: isActive(link.href) ? '#A8401A' : 'rgba(28,25,23,0.5)' }}
+                className="group relative font-mono text-[0.58rem] uppercase tracking-[0.22em] transition-colors"
+                style={{ color: isActive(link.href) ? '#B5673A' : 'rgba(42,37,33,0.5)' }}
               >
                 {link.label}
-                <span
-                  className="absolute -bottom-1 left-0 h-px bg-sienna transition-all duration-300"
-                  style={{ width: isActive(link.href) ? '100%' : '0%' }}
-                />
+                <ContourUnderline active={isActive(link.href)} />
               </Link>
             ))}
             <button
               onClick={openCart}
               className="font-mono text-[0.58rem] uppercase tracking-[0.22em] border border-ink px-4 py-2 hover:bg-sienna hover:border-sienna hover:text-ivory transition-colors duration-300 flex items-center gap-2"
-              style={{ color: '#1C1917' }}
+              style={{ color: '#2A2521' }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
@@ -122,21 +141,21 @@ export default function Nav() {
             <span style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '20px' }}>
               <span
                 style={{
-                  display: 'block', height: '1.5px', background: '#1C1917', width: '100%',
+                  display: 'block', height: '1.5px', background: '#2A2521', width: '100%',
                   transform: menuOpen ? 'translateY(6.5px) rotate(45deg)' : 'none',
                   transition: 'transform 0.3s cubic-bezier(0.76,0,0.24,1)',
                 }}
               />
               <span
                 style={{
-                  display: 'block', height: '1.5px', background: '#1C1917', width: '100%',
+                  display: 'block', height: '1.5px', background: '#2A2521', width: '100%',
                   opacity: menuOpen ? 0 : 1,
                   transition: 'opacity 0.2s',
                 }}
               />
               <span
                 style={{
-                  display: 'block', height: '1.5px', background: '#1C1917', width: '100%',
+                  display: 'block', height: '1.5px', background: '#2A2521', width: '100%',
                   transform: menuOpen ? 'translateY(-6.5px) rotate(-45deg)' : 'none',
                   transition: 'transform 0.3s cubic-bezier(0.76,0,0.24,1)',
                 }}
@@ -155,7 +174,7 @@ export default function Nav() {
             aria-label="Open cart"
             className="min-w-[44px] min-h-[44px] flex items-center justify-end gap-1.5"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1C1917" strokeWidth="1.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2A2521" strokeWidth="1.5">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
               <line x1="3" y1="6" x2="21" y2="6"/>
               <path d="M16 10a4 4 0 01-8 0"/>
@@ -175,7 +194,7 @@ export default function Nav() {
             position: 'fixed',
             inset: 0,
             zIndex: 49,
-            background: '#1C1917',
+            background: '#2A2521',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -189,12 +208,12 @@ export default function Nav() {
             transition: 'opacity 0.35s cubic-bezier(0.76,0,0.24,1), transform 0.35s cubic-bezier(0.76,0,0.24,1)',
           }}
         >
-          {/* Sienna rule top */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: '#A8401A' }} />
+          {/* Clay rule top */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: '#B5673A' }} />
 
           {/* Links */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-            <p style={{ fontFamily: "'Courier New', monospace", fontSize: '9px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(190,176,160,0.35)', margin: '0 0 2rem' }}>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(156,133,99,0.35)', margin: '0 0 2rem' }}>
               Navigate
             </p>
             {[{ href: '/', label: 'Home' }, ...NAV_LINKS].map((link, i) => (
@@ -203,11 +222,11 @@ export default function Nav() {
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
                 style={{
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: "'Fraunces', serif",
                   fontStyle: 'italic',
                   fontWeight: 300,
                   fontSize: 'clamp(2.4rem, 10vw, 3.5rem)',
-                  color: isActive(link.href) ? '#A8401A' : '#FAF6F0',
+                  color: isActive(link.href) ? '#B5673A' : '#FAF6EF',
                   textDecoration: 'none',
                   lineHeight: 1.15,
                   display: 'block',
@@ -230,11 +249,11 @@ export default function Nav() {
             <button
               onClick={() => { setMenuOpen(false); openCart() }}
               style={{
-                fontFamily: "'Courier New', monospace",
+                fontFamily: "'Space Mono', monospace",
                 fontSize: '10px',
                 letterSpacing: '0.22em',
                 textTransform: 'uppercase',
-                color: '#FAF6F0',
+                color: '#FAF6EF',
                 background: 'none',
                 border: '1px solid rgba(255,255,255,0.2)',
                 padding: '0.6rem 1.25rem',
@@ -252,7 +271,7 @@ export default function Nav() {
               Bag {itemCount > 0 && `(${itemCount})`}
             </button>
 
-            <p style={{ fontFamily: "'Courier New', monospace", fontSize: '8px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(190,176,160,0.3)', margin: 0 }}>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '8px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(156,133,99,0.3)', margin: 0 }}>
               Cairo, Egypt
             </p>
           </div>

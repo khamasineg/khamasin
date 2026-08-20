@@ -1,20 +1,16 @@
 import { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://www.fyndethevintage.com'
+const CATEGORIES = ['trouser', 'short', 'wide-leg', 'palazzo', 'cargo', 'pleated']
 
-  // Fetch all products
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://www.khamsin.com'
+
+  // Fetch all active products
   const { data: products } = await supabase
     .from('products')
     .select('slug, created_at')
-    .eq('sold', false)
-
-  // Fetch all lookbook items
-  const { data: lookbook } = await supabase
-    .from('lookbook')
-    .select('id, created_at')
-    .eq('published', true)
+    .eq('active', true)
 
   const productUrls = products?.map((product) => ({
     url: `${baseUrl}/shop/${product.slug}`,
@@ -22,6 +18,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   })) || []
+
+  const categoryUrls = CATEGORIES.map((category) => ({
+    url: `${baseUrl}/collections/${category}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }))
 
   return [
     {
@@ -42,30 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
-    {
-      url: `${baseUrl}/collections/60s`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/collections/70s`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/collections/80s`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/collections/90s`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
+    ...categoryUrls,
     {
       url: `${baseUrl}/lookbook`,
       lastModified: new Date(),

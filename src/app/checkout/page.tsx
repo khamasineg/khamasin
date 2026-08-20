@@ -204,7 +204,7 @@ router.push(`/order-confirmed?id=${data.order.id}&token=${encodeURIComponent(dat
                   <div>
                     <p className="font-serif text-sm text-ink leading-snug">{item.product.name}</p>
                     <p className="font-mono text-[0.45rem] uppercase tracking-[0.2em] text-taupe mt-1">
-                      {item.product.era} · Size {item.size}
+                      {item.product.landform} · Size {item.size}
                     </p>
                   </div>
                   <p className="font-mono text-xs text-ink">

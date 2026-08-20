@@ -7,6 +7,7 @@ import Ticker from '@/components/ui/Ticker'
 import CartDrawer from '@/components/cart/CartDrawer'
 import Loader from '@/components/ui/Loader'
 import SmoothScroll from '@/components/ui/SmoothScroll'
+import ContourWind from '@/components/ui/ContourWind'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.khamsin.com'),
@@ -95,6 +96,7 @@ export default function RootLayout({
       </head>
       <body className="bg-parchment text-ink">
         <Loader />
+        <ContourWind />
         <SmoothScroll />
         <Ticker />
         <Nav />

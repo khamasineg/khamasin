@@ -64,7 +64,7 @@ export default function CartDrawer() {
                 Your cart is empty
               </p>
               <p className="font-serif text-sm italic text-taupe">
-                Find something rare in the archive
+                Cut for the wind — find your pair
               </p>
             </div>
           ) : (

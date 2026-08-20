@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { CartItem, Product } from '@/types'
+import { CartItem, Product, ProductVariant } from '@/types'
 
 type CartStore = {
   items: CartItem[]
   isOpen: boolean
-  addItem: (product: Product, size: string) => void
-  removeItem: (productId: string, size: string) => void
+  addItem: (product: Product, variant: ProductVariant) => void
+  removeItem: (variantId: string) => void
+  setQuantity: (variantId: string, quantity: number) => void
   clearCart: () => void
   openCart: () => void
   closeCart: () => void
@@ -19,21 +20,36 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
 
-      addItem: (product, size) => {
-        const existing = get().items.find(
-          (item) => item.product.id === product.id && item.size === size
-        )
-        if (existing) return // one-of-one pieces, no duplicates
+      addItem: (product, variant) => {
+        const existing = get().items.find((item) => item.variantId === variant.id)
+        if (existing) {
+          // Batch stock, not one-of-one — a repeat add increments quantity,
+          // capped at what's actually in stock for that size.
+          set((state) => ({
+            items: state.items.map((item) =>
+              item.variantId === variant.id
+                ? { ...item, quantity: Math.min(item.quantity + 1, variant.stock_quantity) }
+                : item
+            ),
+          }))
+          return
+        }
         set((state) => ({
-          items: [...state.items, { product, size, quantity: 1 }],
+          items: [...state.items, { product, variantId: variant.id, size: variant.size, quantity: 1 }],
         }))
       },
 
-      removeItem: (productId, size) => {
+      removeItem: (variantId) => {
         set((state) => ({
-          items: state.items.filter(
-            (item) => !(item.product.id === productId && item.size === size)
-          ),
+          items: state.items.filter((item) => item.variantId !== variantId),
+        }))
+      },
+
+      setQuantity: (variantId, quantity) => {
+        set((state) => ({
+          items: quantity <= 0
+            ? state.items.filter((item) => item.variantId !== variantId)
+            : state.items.map((item) => (item.variantId === variantId ? { ...item, quantity } : item)),
         }))
       },
 
@@ -51,7 +67,7 @@ export const useCartStore = create<CartStore>()(
       },
     }),
     {
-      name: 'fynde-cart',
+      name: 'khamsin-cart',
       storage: createJSONStorage(() => localStorage),
       // Only persist items — isOpen always starts closed on fresh load
       partialize: (state) => ({ items: state.items }),
