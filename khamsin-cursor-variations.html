@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KHAMSIN — Cursor Variations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Inter:wght@400;500&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bleached-bone:#FAF6EF;
+    --bone:#F1EAD9;
+    --sand:#C6AE82;
+    --dune-shadow:#9C8563;
+    --basalt:#2A2521;
+    --clay:#B5673A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bleached-bone); color:var(--basalt);
+    font-family:'Inter',sans-serif;
+  }
+  .wrap{ max-width:900px; margin:0 auto; padding:32px 24px 60px; }
+  h1{
+    font-family:'Fraunces',serif; font-weight:500; font-size:28px;
+    letter-spacing:0.01em; margin:0 0 4px;
+  }
+  .sub{ font-family:'Space Mono',monospace; font-size:12px; color:var(--dune-shadow); margin-bottom:24px; }
+  .tabs{ display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .tab{
+    font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.02em;
+    padding:9px 14px; border:1px solid var(--dune-shadow); background:transparent;
+    color:var(--basalt); cursor:pointer; border-radius:2px;
+  }
+  .tab.active{ background:var(--basalt); color:var(--bleached-bone); border-color:var(--basalt); }
+  .stage{
+    position:relative; height:420px; border:1px solid var(--sand);
+    background:var(--bone); overflow:hidden; cursor:none;
+  }
+  .stage.native-cursor{ cursor:auto; }
+  .stage-inner{ padding:48px; }
+  .stage h2{
+    font-family:'Fraunces',serif; font-weight:300; font-size:34px; margin:0 0 10px;
+  }
+  .stage p{ max-width:360px; line-height:1.6; font-size:14px; color:var(--basalt); opacity:0.85; }
+  .row{ display:flex; gap:16px; margin-top:28px; }
+  .card{
+    width:150px; height:190px; background:var(--bleached-bone); border:1px solid var(--sand);
+    display:flex; align-items:flex-end; padding:12px;
+    font-family:'Space Mono',monospace; font-size:11px; color:var(--dune-shadow);
+  }
+  .btn{
+    font-family:'Space Mono',monospace; font-size:12px; letter-spacing:0.03em;
+    background:var(--clay); color:var(--bleached-bone); border:none;
+    padding:12px 22px; align-self:flex-start; margin-top:22px;
+  }
+  .note{ font-size:12px; color:var(--dune-shadow); margin-top:14px; line-height:1.6; }
+
+  /* custom cursor elements */
+  #cursorLayer{ position:absolute; inset:0; pointer-events:none; }
+  .ring{
+    position:absolute; border-radius:46% 54% 52% 48% / 48% 46% 54% 52%;
+    border:1px solid var(--dune-shadow); width:22px; height:22px;
+    transform:translate(-50%,-50%); opacity:0.9;
+  }
+  .ring.grown{ width:38px; height:38px; border-color:var(--clay); }
+  .clayDot{
+    position:absolute; width:6px; height:6px; border-radius:50%;
+    background:var(--clay); transform:translate(-50%,-50%);
+  }
+  .trailLine{
+    position:absolute; width:14px; height:1px; background:var(--dune-shadow);
+    transform-origin:left center; opacity:0.55;
+  }
+  .crosshair{
+    position:absolute; width:20px; height:20px; transform:translate(-50%,-50%);
+  }
+  .crosshair span{
+    position:absolute; background:var(--basalt);
+  }
+  .crosshair .h{ width:20px; height:1px; top:50%; left:0; margin-top:-0.5px; }
+  .crosshair .v{ height:20px; width:1px; left:50%; top:0; margin-left:-0.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>KHAMSIN — cursor variations</h1>
+  <div class="sub">MOVE YOUR MOUSE OVER THE STAGE BELOW / HOVER THE BUTTON &amp; CARD</div>
+
+  <div class="tabs">
+    <button class="tab active" data-mode="contour">01 — Contour Ring</button>
+    <button class="tab" data-mode="wind">02 — Wind Trail</button>
+    <button class="tab" data-mode="crosshair">03 — Crosshair</button>
+    <button class="tab" data-mode="hoveronly">04 — Hover Ring Only</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="stage-inner">
+      <h2>The Erg Trouser</h2>
+      <p>Wide-leg, brushed cotton gabardine. Cut for the wind — hover the card and the button to see the interactive state.</p>
+      <div class="row">
+        <div class="card hoverable">SAND / M<br>EGP —</div>
+      </div>
+      <button class="btn hoverable">ADD TO CART</button>
+    </div>
+    <div id="cursorLayer"></div>
+  </div>
+
+  <div class="note">
+    01 and 04 are the two I'd actually recommend — 01 for a visible signature moment, 04 if you want the more restrained option. 02 and 03 are shown for comparison, not as strong picks.
+  </div>
+</div>
+
+<script>
+const stage = document.getElementById('stage');
+const layer = document.getElementById('cursorLayer');
+const tabs = document.querySelectorAll('.tab');
+let mode = 'contour';
+let mx = 200, my = 200, lx = 200, ly = 200;
+let hovering = false;
+
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  mode = t.dataset.mode;
+  layer.innerHTML = '';
+  stage.classList.toggle('native-cursor', mode === 'hoveronly');
+}));
+
+stage.querySelectorAll('.hoverable').forEach(el => {
+  el.addEventListener('mouseenter', () => hovering = true);
+  el.addEventListener('mouseleave', () => hovering = false);
+});
+
+stage.addEventListener('mousemove', e => {
+  const r = stage.getBoundingClientRect();
+  mx = e.clientX - r.left;
+  my = e.clientY - r.top;
+  if (mode === 'wind' && Math.random() > 0.55) spawnTrail();
+});
+
+function spawnTrail(){
+  const el = document.createElement('div');
+  el.className = 'trailLine';
+  el.style.left = mx + 'px';
+  el.style.top = my + 'px';
+  el.style.transform = `rotate(${Math.random()*360}deg)`;
+  layer.appendChild(el);
+  el.animate([{opacity:.55},{opacity:0}], {duration:380, easing:'ease-out'})
+    .onfinish = () => el.remove();
+}
+
+let ring, dot, cross;
+function ensureEls(){
+  layer.innerHTML = '';
+  if (mode === 'contour'){
+    ring = document.createElement('div'); ring.className='ring'; layer.appendChild(ring);
+  } else if (mode === 'wind'){
+    dot = document.createElement('div'); dot.className='clayDot'; layer.appendChild(dot);
+  } else if (mode === 'crosshair'){
+    cross = document.createElement('div'); cross.className='crosshair';
+    cross.innerHTML = '<span class="h"></span><span class="v"></span>';
+    layer.appendChild(cross);
+  } else if (mode === 'hoveronly'){
+    ring = document.createElement('div'); ring.className='ring'; ring.style.opacity=0;
+    layer.appendChild(ring);
+  }
+}
+ensureEls();
+tabs.forEach(t => t.addEventListener('click', ensureEls));
+
+function tick(){
+  lx += (mx - lx) * 0.18;
+  ly += (my - ly) * 0.18;
+
+  if (mode === 'contour' && ring){
+    ring.style.left = lx + 'px'; ring.style.top = ly + 'px';
+    ring.classList.toggle('grown', hovering);
+  } else if (mode === 'wind' && dot){
+    dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+  } else if (mode === 'crosshair' && cross){
+    cross.style.left = mx + 'px'; cross.style.top = my + 'px';
+    cross.style.transform = `translate(-50%,-50%) rotate(${hovering?45:0}deg) scale(${hovering?0.75:1})`;
+  } else if (mode === 'hoveronly' && ring){
+    ring.style.left = mx + 'px'; ring.style.top = my + 'px';
+    ring.style.opacity = hovering ? 0.9 : 0;
+  }
+  requestAnimationFrame(tick);
+}
+tick();
+</script>
+</body>
+</html>
