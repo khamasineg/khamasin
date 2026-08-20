@@ -4,10 +4,10 @@ import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
 import PageTransition from '@/components/layout/PageTransition'
 import CartDrawer from '@/components/cart/CartDrawer'
-import Loader from '@/components/ui/Loader'
+import FirstVisitLoader from '@/components/ui/FirstVisitLoader'
 import SmoothScroll from '@/components/ui/SmoothScroll'
 import WindField from '@/components/wind/WindField'
-import Grain from '@/components/ui/Grain'
+import Cursor from '@/components/ui/Cursor'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.khamsin.com'),
@@ -66,7 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-parchment text-ink">
         {/* Signature wind field — fixed behind everything at z-0 */}
         <WindField />
-        <Loader />
+        <FirstVisitLoader />
         <SmoothScroll />
         <Nav />
         <CartDrawer />
@@ -74,9 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <PageTransition>{children}</PageTransition>
         </div>
         <Footer />
-        {/* Grain sits above content, below nav — see component for the
-            CLAUDE.md §10 conflict note. */}
-        <Grain />
+        <Cursor />
       </body>
     </html>
   )

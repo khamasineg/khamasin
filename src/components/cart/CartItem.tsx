@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { CartItem as CartItemType } from '@/types'
 import { useCart } from '@/hooks/useCart'
 
@@ -12,7 +13,7 @@ export default function CartItem({ item }: { item: CartItemType }) {
     <div className="flex gap-4 py-4 border-b border-taupe-light">
       <div className="relative w-20 h-24 flex-shrink-0 overflow-hidden bg-taupe-light">
         {item.product.images?.[0] ? (
-          <img src={item.product.images[0]} alt={item.product.name} className="absolute inset-0 w-full h-full object-cover" />
+          <Image src={item.product.images[0]} alt={item.product.name} fill sizes="80px" className="object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="font-mono text-[8px] uppercase tracking-widest text-taupe">No image</span>

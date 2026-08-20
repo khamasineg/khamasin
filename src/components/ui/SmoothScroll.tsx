@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Lenis from 'lenis'
+import { registerLenis } from '@/lib/scrollLock'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -24,11 +25,13 @@ export default function SmoothScroll() {
     })
 
     // Keep GSAP's ScrollTrigger in sync with Lenis's virtual scroll position
+    registerLenis(lenis)
     lenis.on('scroll', ScrollTrigger.update)
     gsap.ticker.add((time) => lenis.raf(time * 1000))
     gsap.ticker.lagSmoothing(0)
 
     return () => {
+      registerLenis(null)
       lenis.destroy()
       gsap.ticker.remove((time) => lenis.raf(time * 1000))
     }

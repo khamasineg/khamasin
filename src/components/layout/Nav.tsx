@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { useCart } from '@/hooks/useCart'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import BagButton from '@/components/cart/BagButton'
+import { lockScroll, unlockScroll } from '@/lib/scrollLock'
 
 const NAV_LINKS = [
   { href: '/shop', label: 'Shop' },
@@ -16,14 +18,15 @@ const NAV_LINKS = [
 export default function Nav() {
   const isMobile = useIsMobile(700)
   const [menuOpen, setMenuOpen] = useState(false)
-  const { itemCount, openCart } = useCart()
+  const { openCart } = useCart()
   const pathname = usePathname()
 
   useEffect(() => { setMenuOpen(false) }, [pathname])
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    if (!menuOpen) return
+    lockScroll()
+    return () => unlockScroll()
   }, [menuOpen])
 
   const isActive = (path: string) => (path === '/' ? pathname === '/' : pathname.startsWith(path))
@@ -77,14 +80,9 @@ export default function Nav() {
             </span>
           )}
 
-          <button
-            onClick={openCart}
-            aria-label="Open cart"
-            className="font-mono transition-opacity hover:opacity-60"
-            style={{ fontSize: 11, color: '#FAF6EF', letterSpacing: '0.1em' }}
-          >
-            BAG{itemCount > 0 ? ` (${itemCount})` : ''}
-          </button>
+          <span style={{ color: '#FAF6EF' }}>
+            <BagButton onClick={openCart} compact={isMobile} />
+          </span>
 
           {isMobile && (
             <button

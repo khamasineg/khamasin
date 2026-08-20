@@ -1,68 +1,37 @@
-'use client'
-
-import { useEffect, useState } from 'react'
+import type { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
-import { Product, ProductCategory } from '@/types'
-import ProductCard from '@/components/shop/ProductCard'
-import FilterBar from '@/components/shop/FilterBar'
-import Reveal from '@/components/ui/Reveal'
+import { Product } from '@/types'
+import PageHeader from '@/components/layout/PageHeader'
+import ShopArchive from '@/components/shop/ShopArchive'
 
-export default function ShopPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [category, setCategory] = useState<ProductCategory | 'all'>('all')
+export const metadata: Metadata = { title: 'Shop' }
 
-  useEffect(() => {
-    async function fetchProducts() {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*, product_variants(*)')
-        .eq('active', true)
-        .order('created_at', { ascending: false })
+// Re-fetched at most once a minute so stock changes surface without making
+// every request hit the database.
+export const revalidate = 60
 
-      if (!error && data) setProducts(data as unknown as Product[])
-      setLoading(false)
-    }
-    fetchProducts()
-  }, [])
+async function getProducts(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, product_variants(*)')
+    .eq('active', true)
+    .order('created_at', { ascending: false })
 
-  const filtered = category === 'all' ? products : products.filter((p) => p.category === category)
+  if (error || !data) return []
+  return data as unknown as Product[]
+}
+
+export default async function ShopPage() {
+  const products = await getProducts()
 
   return (
-    <main className="px-6 md:px-12 pt-28 pb-24 md:pt-36">
-      <div className="mb-10">
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.3em] text-sienna mb-3">The Archive</p>
-        <h1 className="font-display italic text-ink" style={{ fontSize: 'clamp(2.4rem, 6vw, 4.5rem)' }}>
-          Every piece, built for movement.
-        </h1>
-      </div>
-
-      <FilterBar active={category} onChange={setCategory} />
-
-      {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="bg-taupe-light aspect-[3/4] w-full mb-3" />
-              <div className="h-3 bg-taupe-light rounded w-2/3 mb-2" />
-              <div className="h-3 bg-taupe-light rounded w-1/3" />
-            </div>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
-          <p className="font-display italic text-2xl text-ink">
-            {products.length === 0 ? 'The first collection is being cut.' : 'Nothing in this category yet.'}
-          </p>
-          <p className="font-mono text-xs uppercase tracking-widest text-taupe">
-            {products.length === 0 ? 'Check back soon, or join the list on the homepage.' : 'Try a different filter.'}
-          </p>
-        </div>
-      ) : (
-        <Reveal from="up" stagger={0.06} className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {filtered.map((product) => <ProductCard key={product.id} product={product} />)}
-        </Reveal>
-      )}
+    <main className="relative px-6 md:px-[6vw] pt-40 pb-32">
+      <PageHeader
+        eyebrow="The Archive"
+        title="Every piece, built for movement."
+        lede="Unisex bottoms only — trousers, wide-leg, tailored shorts, palazzo, pleated and non-denim cargo. No denim, by design."
+      />
+      <ShopArchive products={products} />
     </main>
   )
 }

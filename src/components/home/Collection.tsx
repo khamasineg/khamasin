@@ -7,22 +7,13 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { supabase } from '@/lib/supabase'
 import { Product } from '@/types'
-import FabricSwatch, { TONES, SwatchTone } from '@/components/shop/FabricSwatch'
+import { SwatchTone } from '@/components/shop/FabricSwatch'
+import Media from '@/components/shop/Media'
+import { FW26, TONE_CYCLE } from '@/lib/collection'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
-
-// Styles, copy and pricing are the founder's, from the prototype. These render
-// until the Supabase catalog is seeded, at which point real rows take over.
-const PROTOTYPE_STYLES = [
-  { slug: 'erg-trouser', name: 'The Erg Trouser', desc: 'Wide through the leg, tapered at the ankle. Mid-weight tencel twill.', price: 2400, tone: TONES.erg },
-  { slug: 'hamada-short', name: 'The Hamada Short', desc: 'Structured, high-rise, tailored short in brushed cotton gabardine.', price: 1650, tone: TONES.hamada },
-  { slug: 'sabkha-pant', name: 'The Sabkha Pant', desc: 'Tone-on-tone, palest piece in the collection. Fluid crepe, pleated front.', price: 2150, tone: TONES.sabkha },
-  { slug: 'khamsin-wrap', name: 'The Khamsin Wrap', desc: 'The wind piece. Palazzo-cut, unstructured, moves with the body.', price: 2600, tone: TONES.khamsin },
-]
-
-const TONE_CYCLE: SwatchTone[] = [TONES.erg, TONES.hamada, TONES.sabkha, TONES.khamsin]
 
 type Card = {
   slug: string
@@ -35,7 +26,7 @@ type Card = {
 
 export default function Collection() {
   const ref = useRef<HTMLElement>(null)
-  const [cards, setCards] = useState<Card[]>(PROTOTYPE_STYLES)
+  const [cards, setCards] = useState<Card[]>(FW26)
   const [isLive, setIsLive] = useState(false)
 
   useEffect(() => {
@@ -119,11 +110,7 @@ export default function Collection() {
             <div className="relative h-[340px] overflow-hidden">
               <div className="absolute inset-0 transition-transform duration-[1400ms] group-hover:scale-[1.045]"
                    style={{ transitionTimingFunction: 'cubic-bezier(.16,1,.3,1)' }}>
-                {card.image ? (
-                  <img src={card.image} alt={card.name} className="w-full h-full object-cover" loading="lazy" />
-                ) : (
-                  <FabricSwatch tone={card.tone} />
-                )}
+                <Media src={card.image ?? `/images/styles/${card.slug}.jpg`} alt={card.name} tone={card.tone} />
               </div>
             </div>
 

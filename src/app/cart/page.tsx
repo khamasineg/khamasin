@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useCart } from '@/hooks/useCart'
+import PageHeader from '@/components/layout/PageHeader'
 
 // Order placement isn't wired to Supabase yet — the `orders` table has no
 // public insert policy by design (CLAUDE.md §8: writes go through the
@@ -16,20 +17,18 @@ export default function CartPage() {
   const canSubmit = items.length > 0 && form.name && form.email && form.address
 
   return (
-    <main className="px-6 md:px-12 pt-28 pb-24 md:pt-36">
-      <div className="mb-10">
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.3em] text-sienna mb-3">Your Order</p>
-        <h1 className="font-display italic text-ink" style={{ fontSize: 'clamp(2.2rem, 5.5vw, 4rem)' }}>
-          Review &amp; ship.
-        </h1>
-      </div>
+    <main className="relative px-6 md:px-[6vw] pt-40 pb-32">
+      <PageHeader eyebrow="Your Order" title="Review and ship." />
 
+      <div className="mt-16">
       {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-4 text-center">
-          <p className="font-display italic text-2xl text-ink">Your cart is empty.</p>
+        <div className="flex flex-col items-center justify-center py-28 gap-5 text-center">
+          <p className="font-display text-ink" style={{ fontWeight: 300, fontSize: '1.7rem' }}>
+            Your cart is empty.
+          </p>
           <Link
             href="/shop"
-            className="font-mono text-xs uppercase tracking-widest text-ivory bg-ink px-6 py-3 hover:bg-sienna transition-colors min-h-[44px] flex items-center"
+            className="font-mono text-[0.6rem] uppercase tracking-[0.24em] text-ivory bg-ink px-7 py-4 hover:bg-sienna transition-colors duration-500 min-h-[44px] flex items-center"
           >
             Browse the Archive
           </Link>
@@ -106,6 +105,7 @@ export default function CartPage() {
           </div>
         </div>
       )}
+      </div>
     </main>
   )
 }

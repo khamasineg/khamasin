@@ -32,6 +32,19 @@ Confirm with the founder before the relevant week starts.
    already exists (built earlier, sent via WhatsApp). Treat it as the reference
    implementation for the signature motif — port it, don't redesign from this doc alone.
 
+## DECIDED — not yet built
+
+Settled calls that the code does not reflect yet. Don't re-litigate these; build them
+when their turn comes.
+
+- **Size charts are per-product, entered from the admin panel.** LOCKED.
+  Today `src/lib/sizeChart.ts` hardcodes one chart per *category* as a stand-in, and
+  `SizeChart.tsx` reads from it. The real thing needs a `size_charts` table (or a jsonb
+  column on `products`), admin UI to enter measurements per product, and `SizeChart.tsx`
+  switching to `product.size_chart` with the category chart kept as fallback for
+  products that don't have one. The existing `SizeChart` type is already shaped for this.
+  Blocked on: the admin panel, which was removed in the rebuild and needs rebuilding.
+
 ---
 
 ## 1. The Brand
@@ -240,9 +253,20 @@ respected, instant reveals not staggered, loader capped at 1.5s.
 - Page transitions: full-screen wipe, restyle in Bone/Basalt instead of FYNDE's
   parchment
 
-**Explicitly removed, not restyled:** custom cursor, film grain overlay, red stamp
+**Explicitly removed, not restyled:** ~~custom cursor~~, film grain overlay, red stamp
 labels. These are FYNDE's visual grammar, not KHAMSIN's — don't port and reskin them,
 delete them.
+
+> **REVERSED — custom cursor is now IN.** The founder asked for one explicitly, themed
+> to KHAMSIN. Built as `components/ui/Cursor.tsx`: a 1px contour-weight ring that trails
+> a Clay dot, opening on links and becoming a crosshair over the product plate. Do not
+> delete it on the strength of the struck-through line above.
+>
+> The original ban was sound in its reasoning — FYNDE's version set
+> `cursor: none !important` globally and broke text selection and form fields. That
+> specific failure is avoided here: the native cursor is hidden only on fine-pointer
+> devices, inputs/textareas/selects keep their caret, and the whole component is inert
+> on touch and under `prefers-reduced-motion`. Keep those guards if you touch it.
 
 ## 11. File Structure
 

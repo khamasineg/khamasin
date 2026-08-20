@@ -101,3 +101,58 @@ body {
 @keyframes fade-in {
   to { opacity: 1; }
 }
+@keyframes wordmark-fill {
+  to {
+    fill: #2A2521;
+    stroke-opacity: 0;
+  }
+}
+@keyframes bag-nudge {
+  0%   { transform: translateY(0) scale(1); }
+  35%  { transform: translateY(-3px) scale(1.1); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes count-pop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  55%  { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes drawer-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes drawer-in-mobile {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes veil-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+/* Idle Ken Burns on the product plate — stops when the loupe engages */
+@keyframes plate-drift {
+  from { transform: scale(1) translate3d(0, 0, 0); }
+  to   { transform: scale(1.06) translate3d(-1.2%, -1%, 0); }
+}
+/* Centred modal entrance — settles from slightly small and low */
+@keyframes modal-in {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(0.975); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+/* Custom cursor — native pointer hidden ONLY on fine-pointer devices, and
+   never on text-entry fields, which keep their caret. Deliberately not the
+   `cursor: none !important` sledgehammer that made FYNDE's version a problem. */
+@media (hover: hover) and (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor a,
+  html.has-custom-cursor button,
+  html.has-custom-cursor [role='button'] {
+    cursor: none;
+  }
+  html.has-custom-cursor input,
+  html.has-custom-cursor textarea,
+  html.has-custom-cursor select,
+  html.has-custom-cursor [contenteditable='true'] {
+    cursor: auto;
+  }
+}
